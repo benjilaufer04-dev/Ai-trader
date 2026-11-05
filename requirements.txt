@@ -1,0 +1,6 @@
+alpaca-py>=0.44
+google-genai>=1.0
+anthropic>=0.40   # only if you use Claude
+pandas>=2.0
+python-dotenv>=1.0
+pytest>=8.0
