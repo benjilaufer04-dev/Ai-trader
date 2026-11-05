@@ -90,6 +90,11 @@ class Agent:
         else:
             req = MarketOrderRequest(symbol=a.symbol, qty=a.qty,
                                      side=OrderSide.SELL, time_in_force=tif)
+        if a.side == "sell" and self.dry_run is False:
+            held = self.positions().get(a.symbol, {}).get("qty", 0)
+            if held and a.qty >= held:  # full exit: let Alpaca close the exact position
+                o = self.trading.close_position(a.symbol.replace("/", ""))
+                return str(o.id), str(o.status)
         if self.dry_run:
             log.info("  [dry-run] would %s %s %s", a.side, a.symbol, a.notional or a.qty)
             return "dry-run", "dry-run"

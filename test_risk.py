@@ -65,3 +65,11 @@ def test_can_sell_holding_not_on_watchlist():
           buy("TSLA", 500)]
     ok, rej = risk.check(ds, ACCT, pos, 0, S)
     assert [a.side for a in ok] == ["sell"] and "watchlist" in rej[0][1]
+
+
+def test_sell_never_exceeds_holding():
+    pos = {"AAPL": {"qty": 5.773296766, "market_value": 2000}}
+    ok, _ = risk.check([{"symbol": "AAPL", "action": "sell", "sell_fraction": 1, "confidence": 0.9}], ACCT, pos, 0, S)
+    assert ok[0].qty == 5.773296766
+    ok, _ = risk.check([{"symbol": "AAPL", "action": "sell", "sell_fraction": 0.5, "confidence": 0.9}], ACCT, pos, 0, S)
+    assert ok[0].qty <= 5.773296766 / 2

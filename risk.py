@@ -3,6 +3,7 @@
 The AI proposes; this module disposes. Every proposal is either approved
 (possibly resized down) or rejected with a reason.
 """
+import math
 import os
 from dataclasses import dataclass
 
@@ -64,7 +65,9 @@ def check(decisions, account, positions, trades_today, settings, market_open=Tru
             if not pos or float(pos["qty"]) <= 0:
                 reject(d, "no position to sell (shorting not allowed)"); continue
             frac = min(max(float(d.get("sell_fraction", 1.0)), 0.0), 1.0)
-            qty = round(float(pos["qty"]) * frac, 6)
+            held = float(pos["qty"])
+            # Round DOWN (never ask to sell more than we hold); full exits sell the exact quantity.
+            qty = held if frac >= 0.999 else math.floor(held * frac * 1e6) / 1e6
             if qty <= 0:
                 reject(d, "sell quantity is zero"); continue
             approved.append(Approved(sym, "sell", qty=qty, reasoning=d.get("reasoning", "")))
