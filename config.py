@@ -31,7 +31,7 @@ class Settings:
 
     @property
     def ai_model(self):
-        return self.model or ("gemini-flash-latest" if self.ai_provider == "gemini"
+        return self.model or ("gemini-3.5-flash" if self.ai_provider == "gemini"
                               else "claude-sonnet-5-5")
 
     # --- paper vs live ---

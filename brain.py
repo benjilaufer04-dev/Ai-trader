@@ -59,7 +59,27 @@ TOOL = {
 }
 
 
-GEMINI_FALLBACKS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite"]
+GEMINI_FALLBACKS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest",
+                    "gemini-flash-lite-latest"]
+
+
+def _discover_flash_models(client):
+    """Ask Google which Flash models this key can use right now (names change often)."""
+    import re
+    found = []
+    try:
+        for m in client.models.list():
+            name = m.name.split("/")[-1]
+            actions = getattr(m, "supported_actions", None) or []
+            if "flash" in name and "generateContent" in actions and not any(
+                    x in name for x in ("image", "tts", "audio", "live", "embedding", "thinking")):
+                found.append(name)
+    except Exception:
+        return []
+    def key(n):  # newest version first, full Flash before Lite, stable before preview
+        v = re.search(r"(\d+(?:\.\d+)?)", n)
+        return (-(float(v.group(1)) if v else 0), "lite" in n, "preview" in n or "exp" in n)
+    return sorted(set(found), key=key)
 
 
 class Brain:
@@ -85,12 +105,16 @@ class Brain:
             response_mime_type="application/json",
             response_json_schema=TOOL["input_schema"],
         )
-        models = [self.model] + [m for m in GEMINI_FALLBACKS if m != self.model]
+        models = []
+        for m in [self.model] + GEMINI_FALLBACKS + _discover_flash_models(self.client):
+            if m not in models:
+                models.append(m)
+        models = models[:6]
         last_err = None
         # Free-tier models are sometimes overloaded (503) or rate-limited (429):
         # retry each model a few times with a pause, then move on to the next model.
         for m in models:
-            for attempt in range(3):
+            for attempt in range(2):
                 try:
                     r = self.client.models.generate_content(model=m, contents=prompt, config=cfg)
                     if m != self.model:
@@ -99,7 +123,7 @@ class Brain:
                 except Exception as e:
                     last_err = e
                     msg = str(e).lower()
-                    if "404" in msg or "not found" in msg:
+                    if "404" in msg or "not found" in msg or "no longer available" in msg:
                         break  # model doesn't exist -> next model
                     if any(x in msg for x in ("503", "unavailable", "overloaded", "429",
                                               "resource_exhausted", "500", "internal", "deadline")):
