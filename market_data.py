@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from alpaca.data.enums import DataFeed
-from alpaca.data.historical import StockHistoricalDataClient
+from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
 from alpaca.data.historical.news import NewsClient
-from alpaca.data.requests import NewsRequest, StockBarsRequest
+from alpaca.data.requests import CryptoBarsRequest, NewsRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 
 
@@ -40,18 +40,20 @@ def summarize(df: pd.DataFrame) -> dict:
 
 
 class MarketData:
-    def __init__(self, key, secret):
-        self.bars = StockHistoricalDataClient(key, secret)
+    def __init__(self, key, secret, crypto=False):
+        self.crypto = crypto
+        self.bars = CryptoHistoricalDataClient(key, secret) if crypto else StockHistoricalDataClient(key, secret)
         self.news = NewsClient(key, secret)
 
     def snapshots(self, symbols: list) -> dict:
-        req = StockBarsRequest(
-            symbol_or_symbols=symbols,
-            timeframe=TimeFrame.Day,
-            start=datetime.now(timezone.utc) - timedelta(days=260),
-            feed=DataFeed.IEX,  # free data feed
-        )
-        df = self.bars.get_stock_bars(req).df
+        start = datetime.now(timezone.utc) - timedelta(days=260)
+        if self.crypto:
+            df = self.bars.get_crypto_bars(CryptoBarsRequest(
+                symbol_or_symbols=symbols, timeframe=TimeFrame.Day, start=start)).df
+        else:
+            df = self.bars.get_stock_bars(StockBarsRequest(
+                symbol_or_symbols=symbols, timeframe=TimeFrame.Day, start=start,
+                feed=DataFeed.IEX)).df  # free data feed
         out = {}
         for sym in symbols:
             try:
@@ -63,8 +65,10 @@ class MarketData:
         return out
 
     def headlines(self, symbols: list, hours: int = 48, limit: int = 40) -> list:
+        plain = [s.replace("/", "") for s in symbols]  # news uses BTCUSD, not BTC/USD
+        back = dict(zip(plain, symbols))
         req = NewsRequest(
-            symbols=",".join(symbols),
+            symbols=",".join(plain),
             start=datetime.now(timezone.utc) - timedelta(hours=hours),
             limit=limit,
             sort="desc",
@@ -74,7 +78,7 @@ class MarketData:
         return [
             {
                 "time": n.created_at.strftime("%m-%d %H:%M"),
-                "symbols": [s for s in n.symbols if s in symbols],
+                "symbols": [back[s] for s in n.symbols if s in back],
                 "headline": n.headline,
                 "summary": (n.summary or "")[:280],
             }

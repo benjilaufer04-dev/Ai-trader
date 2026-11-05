@@ -40,6 +40,11 @@ class Settings:
     live_confirm: str = os.getenv("LIVE_TRADING_CONFIRM", "")
 
     # --- what it may trade ---
+    # CRYPTO=true -> trades the crypto watchlist 24/7 instead of stocks
+    crypto: bool = os.getenv("CRYPTO", "false").lower() == "true"
+    crypto_watchlist: list = field(default_factory=lambda: [
+        s.strip().upper() for s in os.getenv("CRYPTO_WATCHLIST", "BTC/USD,ETH/USD,SOL/USD").split(",") if s.strip()
+    ])
     watchlist: list = field(default_factory=lambda: [
         s.strip().upper() for s in os.getenv(
             "WATCHLIST",
@@ -63,6 +68,11 @@ class Settings:
     db_path: str = os.getenv("DB_PATH", "journal.db")
 
     LIVE_PHRASE = "I accept that real money can be lost"
+
+    def __post_init__(self):
+        if self.crypto:
+            self.watchlist = self.crypto_watchlist
+            self.db_path = os.getenv("DB_PATH", "journal_crypto.db")
 
     def validate(self):
         missing = [n for n, v in [("ALPACA_API_KEY", self.alpaca_key),

@@ -12,7 +12,7 @@ import time
 from datetime import datetime, timezone
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.enums import OrderSide, TimeInForce
+from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
 
@@ -32,11 +32,12 @@ class Agent:
         settings.validate()
         self.dry_run = dry_run
         self.trading = TradingClient(settings.alpaca_key, settings.alpaca_secret, paper=settings.paper)
-        self.data = MarketData(settings.alpaca_key, settings.alpaca_secret)
+        self.data = MarketData(settings.alpaca_key, settings.alpaca_secret, crypto=settings.crypto)
         self.brain = Brain(settings.ai_provider, settings.ai_key, settings.ai_model)
         self.journal = Journal(settings.db_path)
-        log.info("Mode: %s%s | AI: %s %s", "PAPER" if settings.paper else "*** LIVE ***",
-                 " (dry run)" if dry_run else "", settings.ai_provider, settings.ai_model)
+        log.info("Mode: %s%s | %s | AI: %s %s", "PAPER" if settings.paper else "*** LIVE ***",
+                 " (dry run)" if dry_run else "", "CRYPTO" if settings.crypto else "STOCKS",
+                 settings.ai_provider, settings.ai_model)
 
     def account(self):
         a = self.trading.get_account()
@@ -44,16 +45,23 @@ class Agent:
                 "cash": float(a.cash), "buying_power": float(a.buying_power)}
 
     def positions(self):
-        return {p.symbol: {"qty": float(p.qty), "market_value": float(p.market_value),
+        # Only show the AI positions of the asset class this run trades.
+        # Alpaca reports crypto as "BTCUSD"; we use "BTC/USD" everywhere else.
+        want = AssetClass.CRYPTO if settings.crypto else AssetClass.US_EQUITY
+        def name(p):
+            s = p.symbol
+            return s if "/" in s or not settings.crypto else s[:-3] + "/USD"
+        return {name(p): {"qty": float(p.qty), "market_value": float(p.market_value),
                            "avg_entry": float(p.avg_entry_price),
                            "unrealized_pl_%": round(float(p.unrealized_plpc) * 100, 2)}
-                for p in self.trading.get_all_positions()}
+                for p in self.trading.get_all_positions() if p.asset_class == want}
 
     def orders_today(self):
         """Count today's orders from Alpaca itself (works even without a local journal)."""
         start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         orders = self.trading.get_orders(GetOrdersRequest(status=QueryOrderStatus.ALL, after=start, limit=100))
-        return len([o for o in orders if str(o.status) not in ("OrderStatus.REJECTED", "rejected")])
+        mine = AssetClass.CRYPTO if settings.crypto else AssetClass.US_EQUITY
+        return len([o for o in orders if o.asset_class == mine and str(o.status) not in ("OrderStatus.REJECTED", "rejected")])
 
     def recent_orders(self, n=20):
         orders = self.trading.get_orders(GetOrdersRequest(status=QueryOrderStatus.ALL, limit=n))
@@ -62,12 +70,13 @@ class Agent:
                  "status": str(o.status).split(".")[-1]} for o in orders]
 
     def execute(self, a: risk.Approved):
+        tif = TimeInForce.GTC if settings.crypto else TimeInForce.DAY  # crypto doesn't accept DAY
         if a.side == "buy":
             req = MarketOrderRequest(symbol=a.symbol, notional=a.notional,
-                                     side=OrderSide.BUY, time_in_force=TimeInForce.DAY)
+                                     side=OrderSide.BUY, time_in_force=tif)
         else:
             req = MarketOrderRequest(symbol=a.symbol, qty=a.qty,
-                                     side=OrderSide.SELL, time_in_force=TimeInForce.DAY)
+                                     side=OrderSide.SELL, time_in_force=tif)
         if self.dry_run:
             log.info("  [dry-run] would %s %s %s", a.side, a.symbol, a.notional or a.qty)
             return "dry-run", "dry-run"
@@ -76,7 +85,8 @@ class Agent:
 
     def cycle(self):
         clock = self.trading.get_clock()
-        if not clock.is_open:
+        market_open = True if settings.crypto else clock.is_open
+        if not market_open:
             log.info("Market closed - nothing to do.")
             return
         acct, pos = self.account(), self.positions()
@@ -84,7 +94,8 @@ class Agent:
 
         context = {
             "now_utc": datetime.now(timezone.utc).isoformat(timespec="minutes"),
-            "market_open": clock.is_open,
+            "asset_class": "crypto (24/7, very volatile)" if settings.crypto else "US stocks/ETFs",
+            "market_open": market_open,
             "account": acct,
             "day_pnl_%": round((acct["equity"] / acct["last_equity"] - 1) * 100, 2),
             "positions": pos,
@@ -109,7 +120,7 @@ class Agent:
             return
 
         approved, rejected = risk.check(decisions, acct, pos, max(self.journal.trades_today(), self.orders_today()),
-                                        settings, market_open=clock.is_open)
+                                        settings, market_open=market_open)
         for d, why in rejected:
             log.info("  REJECTED %s %s: %s", d.get("action"), d.get("symbol"), why)
             self.journal.decision(cid, d, "rejected", why)
@@ -132,7 +143,7 @@ class Agent:
         while True:
             try:
                 clock = self.trading.get_clock()
-                if clock.is_open:
+                if settings.crypto or clock.is_open:
                     self.cycle()
                     time.sleep(settings.interval_minutes * 60)
                 else:

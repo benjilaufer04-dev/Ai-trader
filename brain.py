@@ -4,7 +4,7 @@ Providers: "gemini" (free tier, default) or "anthropic" (Claude, paid API)."""
 import json
 
 
-SYSTEM = """You are a disciplined portfolio manager running a small US stock/ETF account.
+SYSTEM = """You are a disciplined portfolio manager running a small account (US stocks/ETFs or crypto - see asset_class).
 Each cycle you get: account state, current positions, technical snapshots for a fixed
 watchlist, recent news, and your own recent trades. Decide what to do NOW.
 
