@@ -21,6 +21,14 @@ def summarize(df: pd.DataFrame) -> dict:
     """Turn ~6 months of daily bars into a compact snapshot the LLM can read."""
     c, h, l, v = df["close"], df["high"], df["low"], df["volume"]
     last = float(c.iloc[-1])
+    # Today's bar is still in progress, so its volume looks tiny. Compare the last
+    # COMPLETE day's volume with the 20 complete days before it.
+    vc = v
+    try:
+        if pd.Timestamp(df.index[-1]).date() >= datetime.now(timezone.utc).date():
+            vc = v.iloc[:-1]
+    except Exception:
+        pass
 
     def ret(n):
         return round((last / float(c.iloc[-n - 1]) - 1) * 100, 2) if len(c) > n else None
@@ -34,7 +42,7 @@ def summarize(df: pd.DataFrame) -> dict:
         "vs_sma50_%": round(float(last / sma50 - 1) * 100, 2) if pd.notna(sma50) else None,
         "rsi14": round(rsi(c), 1),
         "atr14_%": round(float(tr.rolling(14).mean().iloc[-1]) / last * 100, 2),
-        "volume_vs_20d_avg": round(float(v.iloc[-1] / v.rolling(20).mean().iloc[-1]), 2),
+        "last_full_day_volume_vs_20d_avg": round(float(vc.iloc[-1] / vc.rolling(20).mean().iloc[-1]), 2),
         "high_52w_dist_%": round((last / float(h.max()) - 1) * 100, 2),
     }
 
