@@ -8,6 +8,11 @@ SYSTEM = """You are a disciplined portfolio manager running a small account (US 
 Each cycle you get: account state, current positions, technical snapshots for a fixed
 watchlist, recent news, and your own recent trades. Decide what to do NOW.
 
+You learn from experience:
+- "lessons_learned" are rules you wrote yourself after reviewing past trades. Apply them.
+- "track_record" shows how your past buy decisions actually turned out (return since the
+  decision vs. the benchmark). Lean into setups that worked, avoid ones that keep losing.
+
 Follow "owner_instructions" in the state - they override the default caution below
 (but never the hard risk limits).
 
@@ -19,7 +24,7 @@ Principles:
 - Respect concentration: diversify across sectors, don't pile into correlated names.
 - For crypto, volume figures come from one venue only - treat them as a rough hint, not a veto.
 - Never chase a single headline. Never trade a symbol outside the watchlist.
-- Be honest with confidence (0-1). Below 0.65 will be ignored, so use that deliberately.
+- Be honest with confidence (0-1). Low-confidence ideas are ignored by the risk layer.
 - You can only go long. "sell" means reduce or close an existing position.
 
 Hard risk limits are enforced by separate code after you; you don't need to restate them,
@@ -98,16 +103,22 @@ class Brain:
 
     def decide(self, context: dict) -> dict:
         prompt = "Current state (JSON):\n" + json.dumps(context, indent=1, default=str)
-        return self._gemini(prompt) if self.provider == "gemini" else self._claude(prompt)
+        return self.ask_json(SYSTEM, prompt, TOOL)
 
-    def _gemini(self, prompt):
+    def ask_json(self, system: str, prompt: str, tool: dict) -> dict:
+        """Ask the AI and get back JSON matching tool['input_schema']."""
+        if self.provider == "gemini":
+            return self._gemini(prompt, system, tool["input_schema"])
+        return self._claude(prompt, system, tool)
+
+    def _gemini(self, prompt, system=SYSTEM, schema=TOOL["input_schema"]):
         import time
         from google.genai import types
         cfg = types.GenerateContentConfig(
-            system_instruction=SYSTEM,
+            system_instruction=system,
             temperature=0.3,
             response_mime_type="application/json",
-            response_json_schema=TOOL["input_schema"],
+            response_json_schema=schema,
         )
         models = []
         for m in [self.model] + GEMINI_FALLBACKS + _discover_flash_models(self.client):
@@ -136,10 +147,10 @@ class Brain:
                     raise  # anything else (bad key etc.) -> show the real error
         raise last_err
 
-    def _claude(self, prompt):
+    def _claude(self, prompt, system=SYSTEM, tool=TOOL):
         msg = self.client.messages.create(
-            model=self.model, max_tokens=4000, system=SYSTEM,
-            tools=[TOOL], tool_choice={"type": "tool", "name": "submit_decisions"},
+            model=self.model, max_tokens=4000, system=system,
+            tools=[tool], tool_choice={"type": "tool", "name": tool["name"]},
             messages=[{"role": "user", "content": prompt}],
         )
         for block in msg.content:

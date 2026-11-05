@@ -1,0 +1,44 @@
+name: Daily review (learn from mistakes)
+
+on:
+  schedule:
+    # Mon-Fri 21:20 UTC = after the US close (23:20 Israel in winter, 00:20 in summer)
+    - cron: "20 21 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency: review
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Review trades and update lessons
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AI_PROVIDER: gemini
+          PAPER: "true"
+          TRADING_STYLE: active
+          FOCUS: "Gold: GLD, IAU, GDX, GDXJ, NEM, AEM in stocks; PAXG/USD (gold token) 24/7."
+        run: python agent.py --review
+      - name: Save the trader's memory (diary + lessons)
+        if: always()
+        run: |
+          git config user.name "ai-trader-bot"
+          git config user.email "ai-trader-bot@users.noreply.github.com"
+          git add memory/ 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "memory: ${{ github.workflow }}"
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i*5)); done
+          exit 1

@@ -7,6 +7,7 @@ Usage:
     python agent.py --report      # print recent decisions from the journal
 """
 import argparse
+import json
 import logging
 import time
 from datetime import datetime, timezone
@@ -16,6 +17,7 @@ from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
 
+import learning
 import risk
 from brain import Brain
 from config import settings
@@ -109,6 +111,9 @@ class Agent:
             return
         acct, pos = self.account(), self.positions()
         symbols = sorted(set(settings.watchlist) | set(pos))
+        snapshots = self.data.snapshots(symbols)
+        prices = {s: v["price"] for s, v in snapshots.items()}
+        past = learning.load_decisions(settings.crypto, days=14)
 
         context = {
             "now_utc": datetime.now(timezone.utc).isoformat(timespec="minutes"),
@@ -117,9 +122,11 @@ class Agent:
             "account": acct,
             "day_pnl_%": round((acct["equity"] / acct["last_equity"] - 1) * 100, 2),
             "positions": pos,
-            "watchlist_snapshots": self.data.snapshots(symbols),
+            "watchlist_snapshots": snapshots,
             "news_last_48h": self.data.headlines(symbols),
             "owner_instructions": owner_instructions(),
+            "lessons_learned": learning.load_lessons(),
+            "track_record": learning.track_record(learning.outcomes(past, prices)),
             "your_recent_decisions": self.journal.recent(),
             "your_recent_orders": self.recent_orders(),
             "limits": {
@@ -140,6 +147,13 @@ class Agent:
         log.info("Market view: %s", result.get("market_view"))
 
         decisions = result.get("decisions", [])
+        statuses = {}
+        try:
+            self._trade(cid, decisions, acct, pos, market_open, statuses)
+        finally:
+            learning.log_decisions(settings.crypto, result.get("market_view", ""), decisions, statuses, snapshots)
+
+    def _trade(self, cid, decisions, acct, pos, market_open, statuses):
         if not decisions:
             log.info("Decision: hold everything.")
             return
@@ -149,6 +163,7 @@ class Agent:
         for d, why in rejected:
             log.info("  REJECTED %s %s: %s", d.get("action"), d.get("symbol"), why)
             self.journal.decision(cid, d, "rejected", why)
+            statuses[str(d.get("symbol", "")).upper()] = "rejected: " + why
 
         by_sym = {d["symbol"].upper(): d for d in decisions}
         for a in approved:
@@ -159,10 +174,12 @@ class Agent:
                 self.journal.order(a, oid, status)
                 self.journal.decision(cid, by_sym[a.symbol], "executed",
                                       f"notional={a.notional} qty={a.qty}")
+                statuses[a.symbol] = "executed"
             except Exception as e:  # one failed order shouldn't kill the loop
                 log.error("  ORDER FAILED %s %s: %s", a.side, a.symbol, e)
                 self.journal.order(a, "", "error")
                 self.journal.decision(cid, by_sym[a.symbol], "error", str(e))
+                statuses[a.symbol] = "error"
 
     def run_forever(self):
         while True:
@@ -203,6 +220,56 @@ def status():
               f"{str(o.status).split('.')[-1]} filled {o.filled_qty} @ {o.filled_avg_price}")
 
 
+def daily_review():
+    """After the close: score recent decisions, ask the AI what it learned, save lessons."""
+    settings.validate()
+    from market_data import MarketData
+    from brain import Brain
+    t = TradingClient(settings.alpaca_key, settings.alpaca_secret, paper=settings.paper)
+    acc = t.get_account()
+    eq, last = float(acc.equity), float(acc.last_equity)
+    account_line = (f"Account ${eq:,.2f} | today {eq-last:+,.2f} ({(eq/last-1)*100:+.2f}%) | "
+                    f"since start {eq-100000:+,.2f} ({(eq/100000-1)*100:+.2f}%)")
+    positions = [{"symbol": p.symbol, "value": round(float(p.market_value), 2),
+                  "pl_%": round(float(p.unrealized_plpc) * 100, 2)} for p in t.get_all_positions()]
+
+    decisions = learning.load_decisions(None, days=7)
+    stock_syms = sorted({d["symbol"] for d in decisions if d.get("mode") == "stocks" and d.get("symbol")} | {"GLD", "SPY"})
+    crypto_syms = sorted({d["symbol"] for d in decisions if d.get("mode") == "crypto" and d.get("symbol")})
+    prices = {}
+    for crypto, syms in ((False, stock_syms), (True, crypto_syms)):
+        if syms:
+            try:
+                snaps = MarketData(settings.alpaca_key, settings.alpaca_secret, crypto=crypto).snapshots(syms)
+                prices.update({s: v["price"] for s, v in snaps.items()})
+            except Exception as e:
+                log.warning("price fetch failed (%s): %s", "crypto" if crypto else "stocks", e)
+    rows = learning.outcomes(decisions, prices)
+    holds = sum(1 for d in decisions if d.get("action") == "hold_all")
+    rejected = [{"ts": d["ts"][:16], "symbol": d.get("symbol"), "action": d.get("action"),
+                 "why": d.get("status")} for d in decisions if str(d.get("status", "")).startswith(("rejected", "error"))]
+    state = {
+        "account": account_line, "positions_now": positions,
+        "benchmark": {"GLD_now": prices.get("GLD"), "SPY_now": prices.get("SPY"),
+                      "note": "GLD = just holding gold; SPY = just holding the S&P 500"},
+        "scored_decisions": rows, "track_record": learning.track_record(rows),
+        "cycles_where_it_held_everything": holds,
+        "rejected_or_failed_orders": rejected[-20:],
+        "current_lessons": learning.load_lessons(),
+        "owner_instructions": owner_instructions(),
+    }
+    brain = Brain(settings.ai_provider, settings.ai_key, settings.ai_model)
+    review = brain.ask_json(learning.REVIEW_SYSTEM, "Review data (JSON):\n" + json.dumps(state, indent=1, default=str),
+                            learning.REVIEW_TOOL)
+    lessons = learning.save_review(review, account_line)
+    print(account_line)
+    print("SUMMARY:", review.get("summary", ""))
+    for m in review.get("mistakes", []):
+        print("MISTAKE:", m)
+    for l in lessons:
+        print("LESSON:", l)
+
+
 def report():
     j = Journal(settings.db_path)
     for r in reversed(j.recent(30)):
@@ -216,9 +283,12 @@ if __name__ == "__main__":
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--report", action="store_true")
     p.add_argument("--status", action="store_true")
+    p.add_argument("--review", action="store_true")
     args = p.parse_args()
     if args.status:
         status()
+    elif args.review:
+        daily_review()
     elif args.report:
         report()
     else:
