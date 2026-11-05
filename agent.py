@@ -164,6 +164,26 @@ class Agent:
                 time.sleep(300)
 
 
+def status():
+    """Print account value, today's P/L and every open position (no trading)."""
+    settings.validate()
+    t = TradingClient(settings.alpaca_key, settings.alpaca_secret, paper=settings.paper)
+    a = t.get_account()
+    eq, last = float(a.equity), float(a.last_equity)
+    print(f"ACCOUNT  value ${eq:,.2f} | today {eq-last:+,.2f} ({(eq/last-1)*100:+.2f}%) | "
+          f"total since start {eq-100000:+,.2f} ({(eq/100000-1)*100:+.2f}%) | cash ${float(a.cash):,.2f}")
+    pos = t.get_all_positions()
+    if not pos:
+        print("POSITIONS none")
+    for p in pos:
+        print(f"POSITION {p.symbol:<8} qty {float(p.qty):g} | bought @ ${float(p.avg_entry_price):,.2f} | "
+              f"now ${float(p.current_price):,.2f} | value ${float(p.market_value):,.2f} | "
+              f"P/L {float(p.unrealized_pl):+,.2f} ({float(p.unrealized_plpc)*100:+.2f}%)")
+    for o in t.get_orders(GetOrdersRequest(status=QueryOrderStatus.ALL, limit=10)):
+        print(f"ORDER    {str(o.submitted_at)[:16]} {str(o.side).split('.')[-1]} {o.symbol} "
+              f"{str(o.status).split('.')[-1]} filled {o.filled_qty} @ {o.filled_avg_price}")
+
+
 def report():
     j = Journal(settings.db_path)
     for r in reversed(j.recent(30)):
@@ -176,8 +196,11 @@ if __name__ == "__main__":
     p.add_argument("--once", action="store_true")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--report", action="store_true")
+    p.add_argument("--status", action="store_true")
     args = p.parse_args()
-    if args.report:
+    if args.status:
+        status()
+    elif args.report:
         report()
     else:
         agent = Agent(dry_run=args.dry_run)
