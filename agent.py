@@ -110,7 +110,13 @@ class Agent:
                 "max_positions": settings.max_positions,
             },
         }
-        result = self.brain.decide(context)
+        try:
+            result = self.brain.decide(context)
+        except Exception as e:
+            # AI temporarily unavailable (e.g. Google 503 "high demand"): skip this
+            # cycle safely - no trades - and try again on the next scheduled run.
+            log.warning("AI unavailable, skipping this cycle (no trades): %s", str(e)[:200])
+            return
         cid = self.journal.cycle(acct, result)
         log.info("Market view: %s", result.get("market_view"))
 
