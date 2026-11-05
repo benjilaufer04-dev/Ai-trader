@@ -57,3 +57,11 @@ def test_kill_switch(tmp_path):
 def test_market_closed():
     ok, rej = risk.check([buy("AAPL", 1000)], ACCT, {}, 0, S, market_open=False)
     assert not ok
+
+
+def test_can_sell_holding_not_on_watchlist():
+    pos = {"TSLA": {"qty": 4, "market_value": 1000}}
+    ds = [{"symbol": "TSLA", "action": "sell", "sell_fraction": 1, "confidence": 0.9},
+          buy("TSLA", 500)]
+    ok, rej = risk.check(ds, ACCT, pos, 0, S)
+    assert [a.side for a in ok] == ["sell"] and "watchlist" in rej[0][1]

@@ -52,7 +52,7 @@ def check(decisions, account, positions, trades_today, settings, market_open=Tru
 
         if trades_left <= 0:
             reject(d, "daily trade limit reached"); continue
-        if sym not in settings.watchlist:
+        if sym not in settings.watchlist and not (action == "sell" and sym in positions):
             reject(d, "symbol not on watchlist"); continue
         if sym in seen:
             reject(d, "duplicate symbol this cycle"); continue

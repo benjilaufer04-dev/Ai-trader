@@ -52,6 +52,10 @@ class Settings:
         ).split(",") if s.strip()
     ])
 
+    # --- how it should trade ---
+    trading_style: str = os.getenv("TRADING_STYLE", "careful").lower()   # careful | active
+    focus: str = os.getenv("FOCUS", "")
+
     # --- schedule ---
     interval_minutes: int = _i("INTERVAL_MINUTES", 60)
 

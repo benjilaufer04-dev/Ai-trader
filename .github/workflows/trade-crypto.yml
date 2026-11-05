@@ -1,4 +1,4 @@
-name: AI crypto trader
+name: AI 24-7 trader (gold token + crypto)
 
 on:
   schedule:
@@ -27,4 +27,11 @@ jobs:
           AI_PROVIDER: gemini
           PAPER: "true"
           CRYPTO: "true"
+          # PAXG = token backed 1:1 by physical gold -> lets it trade gold 24/7
+          CRYPTO_WATCHLIST: "PAXG/USD,BTC/USD,ETH/USD,SOL/USD"
+          TRADING_STYLE: active
+          FOCUS: "Main focus is gold via PAXG/USD (each token = 1 troy ounce of gold, tracks the gold price, trades 24/7). BTC/ETH/SOL are secondary."
+          MIN_CONFIDENCE: "0.55"
+          MAX_TRADES_PER_DAY: "10"
+          MAX_POSITION_PCT: "0.15"
         run: python agent.py --once

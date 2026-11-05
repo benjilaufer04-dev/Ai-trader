@@ -27,6 +27,19 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s",
 log = logging.getLogger("agent")
 
 
+def owner_instructions():
+    out = []
+    if settings.trading_style == "active":
+        out.append(
+            "ACTIVE STYLE: the owner wants more trading activity. Holding everything should be the "
+            "exception. When there is a reasonable (not perfect) edge, open a small starter position "
+            "(about 2-4% of equity) and add to it if it works; trim or cut it if it doesn't. "
+            "Rotating between similar instruments and taking partial profits is fine.")
+    if settings.focus:
+        out.append("FOCUS: " + settings.focus)
+    return out or ["Careful style: only act on clear setups."]
+
+
 class Agent:
     def __init__(self, dry_run=False):
         settings.validate()
@@ -101,6 +114,7 @@ class Agent:
             "positions": pos,
             "watchlist_snapshots": self.data.snapshots(symbols),
             "news_last_48h": self.data.headlines(symbols),
+            "owner_instructions": owner_instructions(),
             "your_recent_decisions": self.journal.recent(),
             "your_recent_orders": self.recent_orders(),
             "limits": {
