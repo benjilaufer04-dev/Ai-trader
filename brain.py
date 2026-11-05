@@ -77,6 +77,7 @@ class Brain:
         return self._gemini(prompt) if self.provider == "gemini" else self._claude(prompt)
 
     def _gemini(self, prompt):
+        import time
         from google.genai import types
         cfg = types.GenerateContentConfig(
             system_instruction=SYSTEM,
@@ -86,16 +87,25 @@ class Brain:
         )
         models = [self.model] + [m for m in GEMINI_FALLBACKS if m != self.model]
         last_err = None
+        # Free-tier models are sometimes overloaded (503) or rate-limited (429):
+        # retry each model a few times with a pause, then move on to the next model.
         for m in models:
-            try:
-                r = self.client.models.generate_content(model=m, contents=prompt, config=cfg)
-                if m != self.model:
-                    self.model = m  # remember the one that works
-                return json.loads(r.text)
-            except Exception as e:  # model retired/renamed -> try the next one
-                last_err = e
-                if "404" not in str(e) and "not found" not in str(e).lower():
-                    raise
+            for attempt in range(3):
+                try:
+                    r = self.client.models.generate_content(model=m, contents=prompt, config=cfg)
+                    if m != self.model:
+                        print(f"(used backup model {m})")
+                    return json.loads(r.text)
+                except Exception as e:
+                    last_err = e
+                    msg = str(e).lower()
+                    if "404" in msg or "not found" in msg:
+                        break  # model doesn't exist -> next model
+                    if any(x in msg for x in ("503", "unavailable", "overloaded", "429",
+                                              "resource_exhausted", "500", "internal", "deadline")):
+                        time.sleep(10 * (attempt + 1))
+                        continue
+                    raise  # anything else (bad key etc.) -> show the real error
         raise last_err
 
     def _claude(self, prompt):
