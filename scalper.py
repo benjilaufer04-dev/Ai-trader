@@ -245,7 +245,8 @@ class Scalper:
                                                      time_in_force=TimeInForce.DAY, stop_price=round(tr["stop"], 2)))
             tr["stop_order"] = str(o.id)
         except Exception as e:
-            log.error("  STOP ORDER FAILED %s: %s (the loop still watches the stop)", sym, str(e)[:150])
+            tr["stop_order"] = None  # retried every loop until the broker accepts it
+            log.error("  STOP ORDER FAILED %s: %s (will retry; the loop still watches the stop)", sym, str(e)[:150])
 
     def move_stop(self, sym):
         tr = self.trades[sym]
@@ -404,6 +405,8 @@ class Scalper:
             if not p:
                 continue
             why = manage(tr, p, now)
+            if not why and not self.dry and not tr.get("stop_order"):
+                self.place_stop(s)
             if not why:
                 self.move_stop(s)
             if not why and CFG["momentum_exit"]:
