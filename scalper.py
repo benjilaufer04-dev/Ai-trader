@@ -180,16 +180,34 @@ class Scalper:
         return {s: float(v.price) for s, v in r.items()}
 
     def order(self, sym, qty, side):
+        """Returns (fill_price, filled_qty). On 'insufficient buying power' retries with
+        the size the broker says it will allow (day-trading buying power shrinks after round trips)."""
         if self.dry:
             log.info("  [dry-run] %s %s %s", side, qty, sym)
-            return None
-        o = self.t.submit_order(MarketOrderRequest(symbol=sym, qty=qty, side=side, time_in_force=TimeInForce.DAY))
+            return None, qty
+        try:
+            o = self.t.submit_order(MarketOrderRequest(symbol=sym, qty=qty, side=side, time_in_force=TimeInForce.DAY))
+        except Exception as e:
+            msg = str(e)
+            if "insufficient buying power" not in msg or side != OrderSide.BUY:
+                raise
+            try:
+                info = json.loads(msg)
+                allowed = float(info["buying_power"]) * 0.95
+                qty2 = int(qty * allowed / float(info["cost_basis"]))
+            except Exception:
+                qty2 = qty // 2
+            log.info("  broker allows less buying power -> %s shares instead of %s", qty2, qty)
+            if qty2 < 1:
+                raise
+            qty = qty2
+            o = self.t.submit_order(MarketOrderRequest(symbol=sym, qty=qty, side=side, time_in_force=TimeInForce.DAY))
         for _ in range(10):
             time.sleep(0.5)
             o = self.t.get_order_by_id(o.id)
             if o.filled_avg_price:
-                return float(o.filled_avg_price)
-        return None
+                return float(o.filled_avg_price), qty
+        return None, qty
 
     def record(self, row):
         if self.dry:
@@ -244,7 +262,12 @@ class Scalper:
             log.info("FORCED TRADE: no room (max positions / buying power).")
             return
         now = datetime.now(timezone.utc)
-        fill = self.order(s, qty, OrderSide.BUY) or price
+        try:
+            fill, qty = self.order(s, qty, OrderSide.BUY)
+        except Exception as e:
+            log.error("FORCED TRADE failed: %s", str(e)[:200])
+            return
+        fill = fill or price
         self.trades[s] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
                           "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
         log.info("FORCED ENTRY %s %d @ %.2f (= $%s) | stop %.2f target %.2f", s, qty, fill,
@@ -336,7 +359,12 @@ class Scalper:
             qty = size(equity, bp, price, len(self.trades))
             if qty < 1:
                 break
-            fill = self.order(s, qty, OrderSide.BUY) or price
+            try:
+                fill, qty = self.order(s, qty, OrderSide.BUY)
+            except Exception as e:
+                log.error("ENTRY failed %s: %s", s, str(e)[:200])
+                break
+            fill = fill or price
             self.trades[s] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
                               "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
             bp -= qty * fill

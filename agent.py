@@ -304,6 +304,8 @@ def status():
     eq, last = float(a.equity), float(a.last_equity)
     gross = sum(abs(float(p.market_value)) for p in t.get_all_positions())
     print(f"LEVERAGE {gross/eq:.2f}x (positions ${gross:,.0f} on equity ${eq:,.0f}) | buying power ${float(a.buying_power):,.0f}")
+    print(f"MARGIN   multiplier {a.multiplier} | day-trading buying power ${float(a.daytrading_buying_power or 0):,.0f} | "
+          f"overnight (RegT) buying power ${float(a.regt_buying_power or 0):,.0f} | day trades (5d) {a.daytrade_count}")
     print(f"ACCOUNT  value ${eq:,.2f} | today {eq-last:+,.2f} ({(eq/last-1)*100:+.2f}%) | "
           f"total since start {eq-100000:+,.2f} ({(eq/100000-1)*100:+.2f}%) | cash ${float(a.cash):,.2f}")
     pos = t.get_all_positions()
