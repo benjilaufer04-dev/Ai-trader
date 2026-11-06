@@ -8,15 +8,16 @@ ENTRY (long only; inverse ETFs like SQQQ/SOXS are how it profits from a fall)
   - EMA9 above EMA21                    (short-term trend up)
   - close breaks the high of the 5 bars before it (breakout)
   - green bar on volume >= 1.3x the 20-bar average (real push, not noise)
+  - but NOT more than 2% above VWAP already (don't chase a move that already happened)
 EXIT (whichever comes first)
-  - stop-loss   -0.5% from entry
-  - take-profit +1.0% (2x the risk)
-  - at +0.5% the stop moves to breakeven; at +0.8% it locks in +0.4%
+  - stop-loss   -0.8% from entry, as a real stop order at the broker (fires instantly)
+  - take-profit +1.6% (2x the risk)
+  - at +0.8% the stop moves to breakeven; at +1.2% it locks in +0.6%
   - momentum dies: EMA9 < EMA21 and price < VWAP
-  - time stop: 20 min without reaching +0.3%
+  - time stop: 25 min without reaching +0.3%
   - everything is closed 10 min before the close (never holds overnight)
 SIZE
-  - each position = POSITION_X x account equity (default 1.5x, i.e. borrowed money)
+  - each position = POSITION_X x account equity (default 1x; with 2 open that's 2x leverage)
   - max 2 positions at once (up to ~3x leverage; Alpaca paper allows 4x intraday)
   - account down DAILY_STOP_PCT (4%) on the day -> no new trades today
   - 10 min cooldown on a symbol after closing it
@@ -39,7 +40,9 @@ from alpaca.data.requests import StockBarsRequest, StockLatestTradeRequest
 from alpaca.data.timeframe import TimeFrame
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.trading.requests import MarketOrderRequest
+from alpaca.trading.enums import QueryOrderStatus
+from alpaca.trading.requests import (GetOrdersRequest, MarketOrderRequest, ReplaceOrderRequest,
+                                     StopOrderRequest)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -53,14 +56,15 @@ def _f(n, d):
 CFG = {
     "symbols": [s.strip().upper() for s in os.getenv(
         "SCALP_SYMBOLS", "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA").split(",") if s.strip()],
-    "position_x": _f("POSITION_X", 1.5),        # each position = 1.5x equity
+    "position_x": _f("POSITION_X", 1.0),        # each position = 1x equity
     "max_positions": int(_f("MAX_POSITIONS", 2)),
-    "stop_pct": _f("STOP_PCT", 0.005),
-    "target_pct": _f("TARGET_PCT", 0.010),
-    "breakeven_at": _f("BREAKEVEN_AT", 0.005),
-    "lock_at": _f("LOCK_AT", 0.008), "lock_pct": _f("LOCK_PCT", 0.004),
-    "time_stop_min": _f("TIME_STOP_MIN", 20), "time_stop_needs": _f("TIME_STOP_NEEDS", 0.003),
+    "stop_pct": _f("STOP_PCT", 0.008),
+    "target_pct": _f("TARGET_PCT", 0.016),
+    "breakeven_at": _f("BREAKEVEN_AT", 0.008),
+    "lock_at": _f("LOCK_AT", 0.012), "lock_pct": _f("LOCK_PCT", 0.006),
+    "time_stop_min": _f("TIME_STOP_MIN", 25), "time_stop_needs": _f("TIME_STOP_NEEDS", 0.003),
     "vol_mult": _f("VOL_MULT", 1.3),
+    "max_extension": _f("MAX_EXTENSION", 0.02),  # don't chase: skip if already >2% above VWAP
     "daily_stop_pct": _f("DAILY_STOP_PCT", 0.04),
     "cooldown_min": _f("COOLDOWN_MIN", 10),
     "skip_open_min": _f("SKIP_OPEN_MIN", 5), "flatten_before_close_min": _f("FLATTEN_MIN", 10),
@@ -94,7 +98,8 @@ def entry_signal(df, cfg=CFG):
     vol, vavg = df["volume"].iloc[i], ind["vol_avg"].iloc[i - 1]
     prior_high = df["high"].iloc[i - 5:i].max()
     ok = (close > ind["vwap"].iloc[i] and ind["ema9"].iloc[i] > ind["ema21"].iloc[i]
-          and close > prior_high and close > open_ and vavg > 0 and vol >= cfg["vol_mult"] * vavg)
+          and close > prior_high and close > open_ and vavg > 0 and vol >= cfg["vol_mult"] * vavg
+          and close / ind["vwap"].iloc[i] - 1 <= cfg["max_extension"])
     return float(vol / vavg) if ok else 0
 
 
@@ -107,8 +112,9 @@ def best_trend(bars):
             continue
         ind = indicators(df)
         c = df["close"].iloc[-1]
-        if c > ind["vwap"].iloc[-1] and ind["ema9"].iloc[-1] > ind["ema21"].iloc[-1]:
-            score = c / ind["vwap"].iloc[-1] - 1
+        ext = c / ind["vwap"].iloc[-1] - 1
+        if ext > 0 and ind["ema9"].iloc[-1] > ind["ema21"].iloc[-1] and ext <= CFG["max_extension"]:
+            score = ext
             if score > best_score:
                 best, best_score = s, score
     return best
@@ -216,10 +222,69 @@ class Scalper:
         with open(TRADES, "a") as f:
             f.write(json.dumps(row, default=str) + "\n")
 
+    # --- stop orders held by the broker (trigger instantly, not on our 20s loop) ---
+    def place_stop(self, sym):
+        tr = self.trades[sym]
+        if self.dry:
+            return
+        try:
+            o = self.t.submit_order(StopOrderRequest(symbol=sym, qty=tr["qty"], side=OrderSide.SELL,
+                                                     time_in_force=TimeInForce.DAY, stop_price=round(tr["stop"], 2)))
+            tr["stop_order"] = str(o.id)
+        except Exception as e:
+            log.error("  STOP ORDER FAILED %s: %s (the loop still watches the stop)", sym, str(e)[:150])
+
+    def move_stop(self, sym):
+        tr = self.trades[sym]
+        if self.dry or not tr.get("stop_order") or round(tr["stop"], 2) <= tr.get("stop_sent", 0):
+            return
+        try:
+            o = self.t.replace_order_by_id(tr["stop_order"], ReplaceOrderRequest(stop_price=round(tr["stop"], 2)))
+            tr["stop_order"], tr["stop_sent"] = str(o.id), round(tr["stop"], 2)
+            log.info("  stop %s moved up to %.2f", sym, tr["stop"])
+        except Exception as e:
+            log.error("  STOP MOVE FAILED %s: %s", sym, str(e)[:150])
+
+    def cancel_orders(self, sym):
+        if self.dry:
+            return
+        try:
+            for o in self.t.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[sym])):
+                self.t.cancel_order_by_id(o.id)
+            time.sleep(0.5)
+        except Exception as e:
+            log.error("  cancel orders %s: %s", sym, str(e)[:150])
+
+    def open_trade(self, sym, fill, qty, now):
+        self.trades[sym] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
+                            "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
+        self.trades[sym]["stop_sent"] = round(self.trades[sym]["stop"], 2)
+        self.place_stop(sym)
+
+    def stopped_out(self, held):
+        """Positions the broker's stop order already sold: record them."""
+        for sym in [s for s in self.trades if s not in held]:
+            tr = self.trades.pop(sym)
+            price = tr["stop"]
+            try:
+                if tr.get("stop_order"):
+                    o = self.t.get_order_by_id(tr["stop_order"])
+                    price = float(o.filled_avg_price or price)
+            except Exception:
+                pass
+            self.cooldown[sym] = datetime.now(timezone.utc) + timedelta(minutes=CFG["cooldown_min"])
+            pnl = (price - tr["entry"]) * tr["qty"]
+            log.info("EXIT  %-5s %d @ %.2f  P/L %+.2f (%+.2f%%)  [stop order filled at broker]", sym, tr["qty"],
+                     price, pnl, (price / tr["entry"] - 1) * 100)
+            self.record({"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "symbol": sym,
+                         "side": "sell", "qty": tr["qty"], "entry": tr["entry"], "exit": price,
+                         "pnl": round(pnl, 2), "reason": f"stop order {tr['stop']:.2f}"})
+
     def close(self, sym, reason, price):
         tr = self.trades.pop(sym, None)
         try:
             if not self.dry:
+                self.cancel_orders(sym)  # free the shares held by the stop order
                 self.t.close_position(sym)
         except Exception as e:
             log.error("  CLOSE FAILED %s: %s", sym, e)
@@ -240,9 +305,8 @@ class Scalper:
         for p in self.t.get_all_positions():
             sym, entry = p.symbol, float(p.avg_entry_price)
             if sym in CFG["symbols"] and float(p.qty) > 0:
-                self.trades[sym] = {"entry": entry, "qty": int(float(p.qty)),
-                                    "stop": entry * (1 - CFG["stop_pct"]), "target": entry * (1 + CFG["target_pct"]),
-                                    "opened": datetime.now(timezone.utc), "best": entry}
+                self.cancel_orders(sym)
+                self.open_trade(sym, entry, int(float(p.qty)), datetime.now(timezone.utc))
                 log.info("ADOPT %s %s @ %.2f", sym, p.qty, entry)
             else:
                 self.close(sym, "not a scalping symbol", float(p.current_price))
@@ -268,8 +332,7 @@ class Scalper:
             log.error("FORCED TRADE failed: %s", str(e)[:200])
             return
         fill = fill or price
-        self.trades[s] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
-                          "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
+        self.open_trade(s, fill, qty, now)
         log.info("FORCED ENTRY %s %d @ %.2f (= $%s) | stop %.2f target %.2f", s, qty, fill,
                  f"{qty*fill:,.0f}", self.trades[s]["stop"], self.trades[s]["target"])
         self.record({"ts": now.isoformat(timespec="seconds"), "symbol": s, "side": "buy", "qty": qty,
@@ -319,6 +382,8 @@ class Scalper:
         acct = self.t.get_account()
         equity, bp = float(acct.equity), float(acct.buying_power)
         # 1) manage open trades every loop
+        if self.trades and not self.dry:
+            self.stopped_out({p.symbol for p in self.t.get_all_positions()})
         px = self.prices(self.trades)
         bars = None
         for s, tr in list(self.trades.items()):
@@ -327,6 +392,7 @@ class Scalper:
                 continue
             why = manage(tr, p, now)
             if not why:
+                self.move_stop(s)
                 bars = bars or self.bars(session_start)
                 if s in bars and momentum_dead(bars[s]):
                     why = "momentum faded (EMA9<EMA21, below VWAP)"
@@ -365,8 +431,7 @@ class Scalper:
                 log.error("ENTRY failed %s: %s", s, str(e)[:200])
                 break
             fill = fill or price
-            self.trades[s] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
-                              "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
+            self.open_trade(s, fill, qty, now)
             bp -= qty * fill
             log.info("ENTRY %-5s %d @ %.2f (= $%s, %.1fx equity) vol x%.1f | stop %.2f target %.2f",
                      s, qty, fill, f"{qty*fill:,.0f}", qty * fill / equity, score,

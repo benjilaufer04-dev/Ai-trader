@@ -46,10 +46,11 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           PAPER: "true"
           SCALP_SYMBOLS: "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA"
-          POSITION_X: "1.5"       # each position = 1.5x account equity (borrowed)
-          MAX_POSITIONS: "2"      # up to ~3x leverage in total
-          STOP_PCT: "0.005"       # -0.5% stop
-          TARGET_PCT: "0.010"     # +1.0% target
+          POSITION_X: "1.0"       # each position = 1x account equity (2 open = 2x, borrowed)
+          MAX_POSITIONS: "2"
+          STOP_PCT: "0.008"       # -0.8% stop (real stop order at the broker)
+          TARGET_PCT: "0.016"     # +1.6% target
+          MAX_EXTENSION: "0.02"   # no chasing: skip if already >2% above VWAP
           DAILY_STOP_PCT: "0.04"  # down 4% on the day -> done for the day
         run: |
           ARGS=""
