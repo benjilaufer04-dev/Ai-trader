@@ -1,0 +1,2 @@
+{"ts": "2026-11-06T17:05:04+00:00", "symbol": "SQQQ", "side": "buy", "qty": 3174, "entry": 47.14, "signal_volume_x": 2.21}
+{"ts": "2026-11-06T17:06:32+00:00", "symbol": "SQQQ", "side": "sell", "qty": 3174, "entry": 47.14, "exit": 46.845, "pnl": -936.33, "reason": "stop 46.90"}
