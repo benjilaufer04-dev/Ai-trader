@@ -11,6 +11,10 @@ on:
       days:
         description: "Trading days to test"
         default: "30"
+      setups:
+        description: "Test the expert setups (ORB, VWAP pullback) instead"
+        type: boolean
+        default: false
       inverse:
         description: "Also test the 'do the opposite' idea"
         type: boolean
@@ -44,7 +48,9 @@ jobs:
         run: |
           ADOPT="--adopt"
           if [ "${{ inputs.adopt }}" = "false" ]; then ADOPT=""; fi
-          if [ "${{ inputs.inverse }}" = "true" ]; then
+          if [ "${{ inputs.setups }}" = "true" ]; then
+            python setups.py --days ${{ inputs.days || '60' }}
+          elif [ "${{ inputs.inverse }}" = "true" ]; then
             python backtest.py --days ${{ inputs.days || '30' }} --inverse
           else
             python backtest.py --days ${{ inputs.days || '30' }} --tune $ADOPT
