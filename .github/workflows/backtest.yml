@@ -11,6 +11,10 @@ on:
       days:
         description: "Trading days to test"
         default: "30"
+      inverse:
+        description: "Also test the 'do the opposite' idea"
+        type: boolean
+        default: false
       adopt:
         description: "Adopt better settings if they pass"
         type: boolean
@@ -40,7 +44,11 @@ jobs:
         run: |
           ADOPT="--adopt"
           if [ "${{ inputs.adopt }}" = "false" ]; then ADOPT=""; fi
-          python backtest.py --days ${{ inputs.days || '30' }} --tune $ADOPT
+          if [ "${{ inputs.inverse }}" = "true" ]; then
+            python backtest.py --days ${{ inputs.days || '30' }} --inverse
+          else
+            python backtest.py --days ${{ inputs.days || '30' }} --tune $ADOPT
+          fi
       - name: Save results
         if: always()
         run: |

@@ -31,6 +31,9 @@ import scalper as sc
 
 PARAMS_FILE = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_params.json")
 REPORT_DIR = os.path.join(os.getenv("MEMORY_DIR", "memory"), "backtests")
+# "Do the opposite": when the rules say buy X, buy the fund that moves the other way.
+OPPOSITE = {"TQQQ": "SQQQ", "SQQQ": "TQQQ", "SOXL": "SOXS", "SOXS": "SOXL"}
+
 TUNABLE = ["stop_pct", "target_pct", "vol_mult", "max_extension", "time_stop_min", "position_x",
            "momentum_exit", "entry_window_min"]
 
@@ -144,6 +147,16 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     continue
                 if p["minute"][idx + 1] != m:
                     continue
+                if cfg.get("inverse"):
+                    s2 = OPPOSITE.get(s)          # no opposite fund (TSLA, NVDA) -> skip
+                    if not s2 or s2 in open_pos or s2 not in prepped:
+                        continue
+                    p2 = prepped[s2]
+                    j = np.searchsorted(p2["minute"], m)
+                    if j >= len(p2["minute"]) or p2["minute"][j] != m:
+                        continue
+                    cands.append((p["score"][idx], s2, p2["o"][j]))
+                    continue
                 cands.append((p["score"][idx], s, p["o"][idx + 1]))
             for score, s, px in sorted(cands, reverse=True):
                 if len(open_pos) >= cfg["max_positions"]:
@@ -215,6 +228,7 @@ def main():
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--tune", action="store_true")
     ap.add_argument("--adopt", action="store_true")
+    ap.add_argument("--inverse", action="store_true", help="test the 'do the opposite' idea")
     a = ap.parse_args()
 
     base = current_cfg()
@@ -231,6 +245,20 @@ def main():
     lines += ["## Current settings", json.dumps(cur), "",
               f"- ALL : {res['current']['all']}", f"- TRAIN: {res['current']['train']}",
               f"- TEST : {res['current']['test']}", ""]
+
+    if a.inverse:
+        lines.append("## 'Do the opposite' test (signal on X -> buy the inverse fund; TSLA/NVDA skipped)")
+        normal_pairs = with_params(base); normal_pairs["symbols"] = list(OPPOSITE)
+        sub = {s: x for s, x in bars.items() if s in OPPOSITE}
+        variants = [("NORMAL, same 4 funds (for comparison)", dict(base), False),
+                    ("OPPOSITE, current rules", dict(base, inverse=1), True),
+                    ("OPPOSITE, no momentum exit", dict(base, inverse=1, momentum_exit=0), True),
+                    ("OPPOSITE, swap stop/target (-1.6% stop, +0.8% target)",
+                     dict(base, inverse=1, stop_pct=base["target_pct"], target_pct=base["stop_pct"]), True)]
+        for name, cfg, _ in variants:
+            lines += [f"### {name}", f"- ALL  : {stats(simulate(sub, days, cfg), days)}",
+                      f"- TRAIN: {stats(simulate(sub, train, cfg), train)}",
+                      f"- TEST : {stats(simulate(sub, test, cfg), test)}", ""]
 
     if a.tune:
         results = []
