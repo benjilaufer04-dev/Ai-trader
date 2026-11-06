@@ -277,6 +277,15 @@ class Scalper:
         if len(self.trades) >= CFG["max_positions"]:
             return
         bars = bars or self.bars(session_start)
+        if now.minute % 5 == 0 and now.second < CFG["loop_seconds"]:
+            parts = []
+            for s, df in bars.items():
+                if len(df) > 21:
+                    ind = indicators(df)
+                    c = df["close"].iloc[-1]
+                    parts.append(f"{s} {c:.2f} {'>' if c > ind['vwap'].iloc[-1] else '<'}VWAP "
+                                 f"{'up' if ind['ema9'].iloc[-1] > ind['ema21'].iloc[-1] else 'down'}")
+            log.info("watching (equity $%s, day %+.2f%%): %s", f"{equity:,.0f}", day_pnl * 100, " | ".join(parts))
         cands = sorted(((entry_signal(df), s) for s, df in bars.items()
                         if s not in self.trades and self.cooldown.get(s, now) <= now), reverse=True)
         for score, s in cands:
