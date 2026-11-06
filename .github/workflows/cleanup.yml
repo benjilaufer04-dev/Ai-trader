@@ -1,0 +1,27 @@
+name: Clean up portfolio
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "Symbols to keep (everything else is sold)"
+        default: "GLD,SPY,QQQ"
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Close positions not in the keep list
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PAPER: "true"
+        run: python agent.py --cleanup "${{ inputs.keep }}"

@@ -220,6 +220,22 @@ def status():
               f"{str(o.status).split('.')[-1]} filled {o.filled_qty} @ {o.filled_avg_price}")
 
 
+def cleanup(keep):
+    """Close every position whose symbol is not in `keep` (stocks queue for the next open)."""
+    settings.validate()
+    t = TradingClient(settings.alpaca_key, settings.alpaca_secret, paper=settings.paper)
+    keep = {s.strip().upper() for s in keep.split(",") if s.strip()}
+    for p in t.get_all_positions():
+        if p.symbol.upper() in keep:
+            print(f"KEEP     {p.symbol}")
+            continue
+        try:
+            o = t.close_position(p.symbol)
+            print(f"CLOSE    {p.symbol} qty {float(p.qty):g} (P/L {float(p.unrealized_pl):+,.2f}) -> {str(o.status).split('.')[-1]}")
+        except Exception as e:
+            print(f"FAILED   {p.symbol}: {str(e)[:150]}")
+
+
 def daily_review():
     """After the close: score recent decisions, ask the AI what it learned, save lessons."""
     settings.validate()
@@ -284,9 +300,12 @@ if __name__ == "__main__":
     p.add_argument("--report", action="store_true")
     p.add_argument("--status", action="store_true")
     p.add_argument("--review", action="store_true")
+    p.add_argument("--cleanup", metavar="KEEP", help="close all positions except these, e.g. GLD,SPY,QQQ")
     args = p.parse_args()
     if args.status:
         status()
+    elif args.cleanup:
+        cleanup(args.cleanup)
     elif args.review:
         daily_review()
     elif args.report:

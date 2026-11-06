@@ -1,9 +1,9 @@
-name: AI 24-7 trader (gold token + crypto)
+name: AI 24-7 trader (OFF)
 
 on:
-  schedule:
-    # Every 2 hours, every day (crypto trades 24/7).
-    - cron: "5 */2 * * *"
+  # Turned off (owner wants only GLD, SPY, QQQ). To turn back on, restore:
+  # schedule:
+  #   - cron: "5 */2 * * *"
   workflow_dispatch: {}   # "Run workflow" button for a test right now
 
 concurrency: trader-crypto

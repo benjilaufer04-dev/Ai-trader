@@ -1,4 +1,4 @@
-name: AI trader (gold stocks)
+name: AI trader (Gold, S&P 500, Nasdaq)
 
 on:
   schedule:
@@ -30,13 +30,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           AI_PROVIDER: gemini
           PAPER: "true"
-          # Gold focus: gold ETFs (GLD, IAU), miners ETFs (GDX, GDXJ), big gold miners (NEM, AEM)
-          WATCHLIST: "GLD,IAU,GDX,GDXJ,NEM,AEM"
+          # Just 3 instruments: gold, S&P 500, Nasdaq 100
+          WATCHLIST: "GLD,SPY,QQQ"
           TRADING_STYLE: active
-          FOCUS: "Trade gold. GLD and IAU track the gold price; GDX/GDXJ/NEM/AEM are miners and move about 2x gold. Use gold news, the dollar and rate expectations to decide. Older non-gold positions (e.g. AAPL) may be sold when it makes sense."
+          FOCUS: "Trade only three things: GLD (gold, like XAUUSD), SPY (S&P 500) and QQQ (Nasdaq 100). Keep it simple: at most one position per instrument, add or trim it as the trend changes. GLD often moves opposite to SPY/QQQ when markets get scared - use that. Sell anything else you find in the account."
           MIN_CONFIDENCE: "0.55"
-          MAX_TRADES_PER_DAY: "10"
-          MAX_POSITION_PCT: "0.15"
+          MAX_TRADES_PER_DAY: "8"
+          MAX_POSITION_PCT: "0.25"
         run: python agent.py --once
       - name: Save the trader's memory (diary + lessons)
         if: always()
