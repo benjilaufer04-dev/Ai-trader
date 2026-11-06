@@ -70,6 +70,8 @@ CFG = {
     "skip_open_min": _f("SKIP_OPEN_MIN", 5), "flatten_before_close_min": _f("FLATTEN_MIN", 10),
     "no_new_before_close_min": _f("NO_NEW_MIN", 20),
     "loop_seconds": _f("LOOP_SECONDS", 20),
+    "entry_window_min": _f("ENTRY_WINDOW_MIN", 999),  # only open new trades in the first N minutes
+    "momentum_exit": _f("MOMENTUM_EXIT", 1),          # 1 = exit when EMA9<EMA21 & below VWAP
 }
 PARAMS_FILE = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_params.json")
 if os.getenv("USE_TUNED_PARAMS", "true").lower() == "true" and os.path.exists(PARAMS_FILE):
@@ -404,6 +406,7 @@ class Scalper:
             why = manage(tr, p, now)
             if not why:
                 self.move_stop(s)
+            if not why and CFG["momentum_exit"]:
                 bars = bars or self.bars(session_start)
                 if s in bars and momentum_dead(bars[s]):
                     why = "momentum faded (EMA9<EMA21, below VWAP)"
@@ -413,7 +416,9 @@ class Scalper:
         day_pnl = equity / self.day_start_equity - 1
         if day_pnl <= -CFG["daily_stop_pct"]:
             return
-        if (now - session_start).total_seconds() / 60 < CFG["skip_open_min"] or to_close < CFG["no_new_before_close_min"]:
+        since_open = (now - session_start).total_seconds() / 60
+        if since_open < CFG["skip_open_min"] or since_open > CFG["entry_window_min"] \
+                or to_close < CFG["no_new_before_close_min"]:
             return
         if len(self.trades) >= CFG["max_positions"]:
             return

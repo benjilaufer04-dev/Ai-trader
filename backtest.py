@@ -31,7 +31,8 @@ import scalper as sc
 
 PARAMS_FILE = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_params.json")
 REPORT_DIR = os.path.join(os.getenv("MEMORY_DIR", "memory"), "backtests")
-TUNABLE = ["stop_pct", "target_pct", "vol_mult", "max_extension", "time_stop_min", "position_x"]
+TUNABLE = ["stop_pct", "target_pct", "vol_mult", "max_extension", "time_stop_min", "position_x",
+           "momentum_exit", "entry_window_min"]
 
 
 # ---------- data ----------
@@ -118,7 +119,7 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     age = m - t["m"]
                     if age >= cfg["time_stop_min"] and g < cfg["time_stop_needs"]:
                         exit_px, why = c, "time"
-                    elif p["dead"][idx]:
+                    elif cfg["momentum_exit"] and p["dead"][idx]:
                         exit_px, why = c, "momentum"
                     elif m >= session_len - cfg["flatten_before_close_min"]:
                         exit_px, why = c, "eod"
@@ -131,6 +132,7 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     cooldown[s] = m + cfg["cooldown_min"]
             # 2) entries: signal on the bar that closed at minute m-1 -> buy this bar's open
             if (m - 1 < cfg["skip_open_min"] or m > session_len - cfg["no_new_before_close_min"]
+                    or m > cfg["entry_window_min"]
                     or len(open_pos) >= cfg["max_positions"]):
                 continue
             cands = []
@@ -192,17 +194,18 @@ def with_params(base, **kw):
 
 
 def grid(base):
-    for stop, rr, vm, ext, ts in itertools.product(
-            [0.004, 0.006, 0.008, 0.012, 0.016], [1.5, 2.0, 3.0], [1.3, 2.0, 3.0], [0.01, 0.02, 0.04], [15, 30, 60]):
+    for stop, rr, vm, ext, ts, mom, win in itertools.product(
+            [0.008, 0.012, 0.016, 0.024], [2.0, 3.0], [2.0, 3.0], [0.02, 0.04], [30, 60, 999], [1, 0], [999, 120]):
         # keep money at risk per trade about constant: smaller size for wider stops
         px = round(min(1.5, 0.008 / stop), 2)
         yield with_params(base, stop_pct=stop, target_pct=round(stop * rr, 4), vol_mult=vm,
-                          max_extension=ext, time_stop_min=ts, position_x=px)
+                          max_extension=ext, time_stop_min=ts, position_x=px,
+                          momentum_exit=mom, entry_window_min=win)
 
 
 def score_fn(s):
     """Rank settings: needs enough trades; reward profit, punish drawdown."""
-    if s["trades"] < 15:
+    if s["trades"] < 30:
         return -1e9
     return s["pnl"] + 0.5 * s["max_drawdown"]
 
