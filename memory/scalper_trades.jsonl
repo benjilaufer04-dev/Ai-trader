@@ -7,3 +7,9 @@
 {"ts": "2026-11-06T17:49:09+00:00", "symbol": "SOXS", "side": "buy", "qty": 1258, "entry": 75.2, "signal_volume_x": 1.79}
 {"ts": "2026-11-06T17:51:17+00:00", "symbol": "SOXS", "side": "sell", "qty": 1258, "entry": 75.2, "exit": 74.68, "pnl": -654.16, "reason": "stop 75.20"}
 {"ts": "2026-11-06T18:30:12+00:00", "symbol": "TSLA", "side": "buy", "qty": 275, "entry": 358.98, "signal_volume_x": 1.87}
+{"ts": "2026-11-06T19:20:19+00:00", "symbol": "TQQQ", "side": "sell", "qty": 1875, "exit": 52.77, "pnl": -356.25, "reason": "momentum faded (EMA9<EMA21, below VWAP)", "restored_from_log": true}
+{"ts": "2026-11-06T19:36:52+00:00", "symbol": "SOXS", "side": "sell", "qty": 657, "exit": 71.39, "pnl": -13.14, "reason": "stop 71.41", "restored_from_log": true}
+{"ts": "2026-11-06T20:17:12+00:00", "symbol": "TSLA", "side": "sell", "qty": 275, "exit": 361.06, "pnl": 573.68, "reason": "stop order filled at broker", "restored_from_log": true}
+{"ts": "2026-11-06T20:20:02+00:00", "symbol": "TQQQ", "side": "sell", "qty": 1881, "exit": 52.75, "pnl": -827.64, "reason": "stop order filled at broker", "restored_from_log": true}
+{"ts": "2026-11-06T20:37:03+00:00", "symbol": "SOXL", "side": "sell", "qty": 2011, "exit": 45.9, "pnl": -778.57, "reason": "stop order filled at broker", "restored_from_log": true}
+{"ts": "2026-11-06T20:50:05+00:00", "symbol": "SQQQ", "side": "sell", "qty": 2088, "exit": 47.43, "pnl": 542.88, "reason": "end of day - flat overnight", "restored_from_log": true}
