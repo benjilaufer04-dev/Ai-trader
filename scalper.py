@@ -71,6 +71,17 @@ CFG = {
     "no_new_before_close_min": _f("NO_NEW_MIN", 20),
     "loop_seconds": _f("LOOP_SECONDS", 20),
 }
+PARAMS_FILE = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_params.json")
+if os.getenv("USE_TUNED_PARAMS", "true").lower() == "true" and os.path.exists(PARAMS_FILE):
+    # Settings adopted by the nightly self-tuning (backtest.py) override the defaults/env.
+    try:
+        _p = json.load(open(PARAMS_FILE))["params"]
+        CFG.update({k: v for k, v in _p.items() if k in CFG})
+        CFG["breakeven_at"] = CFG["stop_pct"]
+        CFG["lock_at"] = CFG["stop_pct"] * 1.5
+        CFG["lock_pct"] = CFG["stop_pct"] * 0.75
+    except Exception:
+        pass
 TRADES = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_trades.jsonl")
 
 
