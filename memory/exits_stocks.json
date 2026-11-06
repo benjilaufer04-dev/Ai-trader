@@ -1,0 +1,13 @@
+{
+ "GLD": {
+  "stop": 366.84
+ },
+ "QQQ": {
+  "stop": 640.0,
+  "take_profit": 705.0
+ },
+ "SPY": {
+  "stop": 720.0,
+  "take_profit": 763.0
+ }
+}

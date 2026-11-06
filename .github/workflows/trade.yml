@@ -34,7 +34,7 @@ jobs:
           WATCHLIST: "GLD,SPY,QQQ"
           TRADING_STYLE: active
           FOCUS: "Trade only three things: GLD (gold, like XAUUSD), SPY (S&P 500) and QQQ (Nasdaq 100). Keep it simple: at most one position per instrument, add or trim it as the trend changes. GLD often moves opposite to SPY/QQQ when markets get scared - use that. Sell anything else you find in the account."
-          MIN_CONFIDENCE: "0.55"
+          MIN_CONFIDENCE: "0.65"
           MAX_TRADES_PER_DAY: "8"
           MAX_POSITION_PCT: "0.25"
         run: python agent.py --once

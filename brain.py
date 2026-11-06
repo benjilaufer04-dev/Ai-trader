@@ -21,6 +21,9 @@ Principles:
 - Prefer trend-following entries with confirmation (price above rising averages, healthy
   RSI, supportive news) over catching falling knives.
 - Cut losers that have broken their thesis; let winners run but trim if extended.
+- Every buy needs stop_loss_price and take_profit_price. Code sells automatically at those
+  levels (see exit_levels_enforced_by_code). Risk small, aim to win at least 2x what you risk.
+- Never add to a position that is losing.
 - Respect concentration: diversify across sectors, don't pile into correlated names.
 - For crypto, volume figures come from one venue only - treat them as a rough hint, not a veto.
 - Never chase a single headline. Never trade a symbol outside the watchlist.
@@ -58,6 +61,8 @@ TOOL = {
                         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
                         "reasoning": {"type": "string"},
                         "exit_plan": {"type": "string", "description": "When you'd get out (buys)."},
+                        "stop_loss_price": {"type": "number", "description": "Buys: price where code sells everything automatically (1.5-4% below now)."},
+                        "take_profit_price": {"type": "number", "description": "Buys: price where code sells half automatically (aim for 2x the stop distance)."},
                     },
                     "required": ["symbol", "action", "confidence", "reasoning"],
                 },

@@ -17,6 +17,7 @@ from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
 
+import exits
 import learning
 import risk
 from brain import Brain
@@ -33,10 +34,13 @@ def owner_instructions():
     out = []
     if settings.trading_style == "active":
         out.append(
-            "ACTIVE STYLE: the owner wants more trading activity. Holding everything should be the "
-            "exception. When there is a reasonable (not perfect) edge, open a small starter position "
-            "(about 2-4% of equity) and add to it if it works; trim or cut it if it doesn't. "
-            "Rotating between similar instruments and taking partial profits is fine.")
+            "ACTIVE STYLE: the owner wants you engaged, but only with a real edge. "
+            "Holding is fine when there is no clear setup - forced trades lose money. "
+            "Prefer entries WITH the trend (price above a rising 20-day average) over "
+            "catching falling knives. Open a small starter position (about 2-4% of equity), "
+            "add only when it is working, never add to a loser. Every buy MUST include a "
+            "stop_loss_price (1.5-4% below the current price) and a take_profit_price at least "
+            "2x as far above the price as the stop is below it - code enforces them for you.")
     if settings.focus:
         out.append("FOCUS: " + settings.focus)
     return out or ["Careful style: only act on clear setups."]
@@ -68,6 +72,7 @@ class Agent:
             return s if "/" in s or not settings.crypto else s[:-3] + "/USD"
         return {name(p): {"qty": float(p.qty), "market_value": float(p.market_value),
                            "avg_entry": float(p.avg_entry_price),
+                           "price": float(p.current_price),
                            "unrealized_pl_%": round(float(p.unrealized_plpc) * 100, 2)}
                 for p in self.trading.get_all_positions() if p.asset_class == want}
 
@@ -109,6 +114,7 @@ class Agent:
         if not market_open:
             log.info("Market closed - nothing to do.")
             return
+        self._enforce_exits()
         acct, pos = self.account(), self.positions()
         symbols = sorted(set(settings.watchlist) | set(pos))
         snapshots = self.data.snapshots(symbols)
@@ -129,6 +135,7 @@ class Agent:
             "track_record": learning.track_record(learning.outcomes(past, prices)),
             "your_recent_decisions": self.journal.recent(),
             "your_recent_orders": self.recent_orders(),
+            "exit_levels_enforced_by_code": exits.load(settings.crypto),
             "limits": {
                 "max_position_%_of_equity": settings.max_position_pct * 100,
                 "max_order_usd": settings.max_order_usd,
@@ -153,6 +160,26 @@ class Agent:
         finally:
             learning.log_decisions(settings.crypto, result.get("market_view", ""), decisions, statuses, snapshots)
 
+    def _enforce_exits(self):
+        """Sell positions that hit their stop-loss or take-profit. Runs before the AI,
+        ignores the daily trade limit (cutting a loser must always be possible)."""
+        pos = self.positions()
+        actions, levels = exits.check(pos, exits.load(settings.crypto), settings.default_stop_pct)
+        for sym, frac, why in actions:
+            held = pos[sym]["qty"]
+            qty = held if frac >= 0.999 else int(held * frac * 1e6) / 1e6
+            a = risk.Approved(sym, "sell", qty=qty, reasoning=why)
+            try:
+                oid, status = self.execute(a)
+                log.info("  EXIT %s %s -> %s (%s)", sym, qty, status, why)
+                self.journal.order(a, oid, status)
+                learning.log_decisions(settings.crypto, "auto exit (code)", [
+                    {"symbol": sym, "action": "sell", "sell_fraction": frac, "confidence": 1,
+                     "reasoning": why}], {sym: "executed"}, {sym: {"price": pos[sym]["price"]}})
+            except Exception as e:
+                log.error("  EXIT FAILED %s: %s", sym, e)
+        exits.save(settings.crypto, levels)
+
     def _trade(self, cid, decisions, acct, pos, market_open, statuses):
         if not decisions:
             log.info("Decision: hold everything.")
@@ -175,6 +202,15 @@ class Agent:
                 self.journal.decision(cid, by_sym[a.symbol], "executed",
                                       f"notional={a.notional} qty={a.qty}")
                 statuses[a.symbol] = "executed"
+                if a.side == "buy" and not self.dry_run:
+                    d = by_sym[a.symbol]
+                    price = (self.data.snapshots([a.symbol]).get(a.symbol) or {}).get("price") or 0
+                    if price:
+                        lv = exits.record_buy(exits.load(settings.crypto), a.symbol, float(price),
+                                              d.get("stop_loss_price"), d.get("take_profit_price"),
+                                              settings.max_stop_pct)
+                        exits.save(settings.crypto, lv)
+                        log.info("  EXITS %s: %s", a.symbol, lv.get(a.symbol))
             except Exception as e:  # one failed order shouldn't kill the loop
                 log.error("  ORDER FAILED %s %s: %s", a.side, a.symbol, e)
                 self.journal.order(a, "", "error")

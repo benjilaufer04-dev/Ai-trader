@@ -67,6 +67,8 @@ class Settings:
     min_cash_reserve_pct: float = _f("MIN_CASH_RESERVE_PCT", 0.20)  # always keep 20% in cash
     min_confidence: float = _f("MIN_CONFIDENCE", 0.65)
     max_positions: int = _i("MAX_POSITIONS", 8)
+    default_stop_pct: float = _f("DEFAULT_STOP_PCT", 0.03)   # stop-loss if the AI didn't set one
+    max_stop_pct: float = _f("MAX_STOP_PCT", 0.05)           # AI stops further away are ignored
 
     kill_switch_file: str = os.getenv("KILL_SWITCH_FILE", "STOP")
     db_path: str = os.getenv("DB_PATH", "journal.db")
