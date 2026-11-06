@@ -1,10 +1,9 @@
-name: AI trader (Gold, S&P 500, Nasdaq)
+name: AI trader (OFF - replaced by scalper)
 
 on:
-  schedule:
-    # Every 30 minutes, Mon-Fri, 13:05-20:35 UTC (covers US market hours all year).
-    # The agent itself checks if the market is open and exits if not.
-    - cron: "5,35 13-20 * * 1-5"
+  # OFF: the scalper replaced this bot. To turn it back on, restore the schedule:
+  # schedule:
+  #   - cron: "5,35 13-20 * * 1-5"
   workflow_dispatch: {}   # lets you press "Run workflow" by hand from your phone
 
 concurrency: trader       # never two runs at once
@@ -30,13 +29,24 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           AI_PROVIDER: gemini
           PAPER: "true"
-          # Just 3 instruments: gold, S&P 500, Nasdaq 100
-          WATCHLIST: "GLD,SPY,QQQ"
+          # HIGH-RISK EXPERIMENT (paper only): margin up to 4x + leveraged / volatile names.
+          # To go back to the safe bot, set RISK_MODE to "normal" and restore the old settings
+          # (see git history, commit "Enforce stop-losses...").
+          RISK_MODE: aggressive
+          WATCHLIST: "TQQQ,SQQQ,SOXL,SOXS,UPRO,SPXU,UGL,NUGT,JNUG,TSLA,NVDA,MSTR,COIN,SMCI,PLTR,SPY,QQQ,GLD"
           TRADING_STYLE: active
-          FOCUS: "Trade only three things: GLD (gold, like XAUUSD), SPY (S&P 500) and QQQ (Nasdaq 100). Keep it simple: at most one position per instrument, add or trim it as the trend changes. GLD often moves opposite to SPY/QQQ when markets get scared - use that. Sell anything else you find in the account."
-          MIN_CONFIDENCE: "0.65"
-          MAX_TRADES_PER_DAY: "8"
-          MAX_POSITION_PCT: "0.25"
+          FOCUS: "High-risk experiment. Leveraged ETFs: TQQQ/SQQQ (3x Nasdaq up/down), SOXL/SOXS (3x chips up/down), UPRO/SPXU (3x S&P up/down), UGL (2x gold), NUGT/JNUG (2x gold miners). Volatile stocks: TSLA, NVDA, MSTR, COIN, SMCI, PLTR. SPY/QQQ/GLD are leftovers from the safe bot - keep, rotate or sell them as you see fit. Go big on your best ideas."
+          MIN_CONFIDENCE: "0.55"
+          MAX_TRADES_PER_DAY: "20"
+          MAX_POSITION_PCT: "1.0"
+          MAX_ORDER_USD: "100000"
+          MAX_POSITIONS: "6"
+          DAILY_LOSS_LIMIT_PCT: "0.20"
+          MIN_CASH_RESERVE_PCT: "0"
+          MAX_GROSS_LEVERAGE: "4.0"
+          OVERNIGHT_LEVERAGE: "1.9"
+          DEFAULT_STOP_PCT: "0.08"
+          MAX_STOP_PCT: "0.15"
         run: python agent.py --once
       - name: Save the trader's memory (diary + lessons)
         if: always()

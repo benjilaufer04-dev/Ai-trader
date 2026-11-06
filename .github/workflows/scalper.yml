@@ -1,0 +1,65 @@
+name: Scalper (big leveraged positions, paper)
+
+# The US session is 6.5h but a GitHub job can run at most 6h, so two runs share the day:
+#  run 1 starts before the open, waits, then scalps for 270 min and hands over flat;
+#  run 2 queues behind it (same concurrency group) and scalps until the close.
+# Everything is closed 10 min before the close - never holds overnight.
+on:
+  schedule:
+    - cron: "10 13 * * 1-5"   # run 1
+    - cron: "50 17 * * 1-5"   # run 2 (waits for run 1 to finish)
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Stop after N minutes (empty = until the close)"
+        required: false
+      dry_run:
+        description: "Dry run (no orders)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: scalper
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scalp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Scalp
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          PAPER: "true"
+          SCALP_SYMBOLS: "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA"
+          POSITION_X: "1.5"       # each position = 1.5x account equity (borrowed)
+          MAX_POSITIONS: "2"      # up to ~3x leverage in total
+          STOP_PCT: "0.005"       # -0.5% stop
+          TARGET_PCT: "0.010"     # +1.0% target
+          DAILY_STOP_PCT: "0.04"  # down 4% on the day -> done for the day
+        run: |
+          ARGS=""
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "10 13 * * 1-5" ]; then ARGS="--minutes 270"; fi
+          if [ -n "${{ inputs.minutes }}" ]; then ARGS="--minutes ${{ inputs.minutes }}"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scalper.py $ARGS
+      - name: Save the trade log
+        if: always()
+        run: |
+          git config user.name "ai-trader-bot"
+          git config user.email "ai-trader-bot@users.noreply.github.com"
+          git add memory/ 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "memory: scalper trades"
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i*5)); done
+          exit 1

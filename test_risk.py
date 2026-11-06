@@ -73,3 +73,23 @@ def test_sell_never_exceeds_holding():
     assert ok[0].qty == 5.773296766
     ok, _ = risk.check([{"symbol": "AAPL", "action": "sell", "sell_fraction": 0.5, "confidence": 0.9}], ACCT, pos, 0, S)
     assert ok[0].qty <= 5.773296766 / 2
+
+
+def test_aggressive_uses_margin():
+    import copy
+    s = copy.copy(S); s.risk_mode = "aggressive"; s.max_position_pct = 1.0
+    s.max_order_usd = 100_000; s.max_gross_leverage = 4.0
+    acct = {"equity": 100_000, "last_equity": 100_000, "cash": 10_000, "buying_power": 400_000}
+    ok, _ = risk.check([buy("NVDA", 90_000)], acct, {}, 0, s)
+    assert ok[0].notional == 90_000  # way more than cash: borrowed
+    pos = {"SPY": {"qty": 1, "market_value": 350_000}}
+    ok, _ = risk.check([buy("NVDA", 90_000)], acct, pos, 0, s)
+    assert ok[0].notional == 50_000  # capped at 4x total exposure
+
+
+def test_normal_mode_no_margin():
+    acct = {"equity": 100_000, "last_equity": 100_000, "cash": 25_000, "buying_power": 400_000}
+    ok, _ = risk.check([buy("AAPL", 2_000)], acct, {}, 0, S)
+    assert ok[0].notional == 2_000
+    ok, _ = risk.check([buy("AAPL", 9_000)], acct, {}, 0, S)
+    assert ok[0].notional == S.max_order_usd

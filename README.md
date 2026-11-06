@@ -1,4 +1,12 @@
-# AI Trader: AI-driven stock agent on Alpaca (free to run)
+# AI Trader
+
+> **Running now: the Scalper** (`scalper.py`, workflow *Scalper*). Paper money only.
+> Rule-based 1-minute momentum scalping on TQQQ, SQQQ, SOXL, SOXS, TSLA and NVDA with big
+> leveraged positions (1.5x equity each, max 2 at once). Buys breakouts above VWAP with rising
+> EMAs on strong volume; exits at -0.5% stop / +1.0% target / breakeven & lock-in stops /
+> 20-min time stop / momentum fade, and is always flat before the close. Rules are at the top of
+> `scalper.py`. The AI bot below is switched off (its workflow can still be run by hand).
+
 
 On every cycle (default: once an hour while the US market is open) the agent does this:
 

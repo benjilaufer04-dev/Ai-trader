@@ -75,6 +75,16 @@ class Settings:
 
     LIVE_PHRASE = "I accept that real money can be lost"
 
+    # --- high-risk experiment: margin + leveraged ETFs (PAPER ONLY) ---
+    risk_mode: str = os.getenv("RISK_MODE", "normal").lower()      # normal | aggressive
+    max_gross_leverage: float = _f("MAX_GROSS_LEVERAGE", 4.0)       # intraday (Alpaca max 4x)
+    overnight_leverage: float = _f("OVERNIGHT_LEVERAGE", 1.9)       # Alpaca allows 2x overnight
+    delever_minutes_before_close: int = _i("DELEVER_MINUTES", 40)
+
+    @property
+    def aggressive(self):
+        return self.risk_mode == "aggressive"
+
     def __post_init__(self):
         if self.crypto:
             self.watchlist = self.crypto_watchlist
@@ -87,6 +97,8 @@ class Settings:
                                    else "ANTHROPIC_API_KEY", self.ai_key)] if not v]
         if missing:
             raise SystemExit(f"Missing in .env: {', '.join(missing)}")
+        if self.aggressive and not self.paper:
+            raise SystemExit("RISK_MODE=aggressive is a paper-trading experiment only. Refusing to run live.")
         if not self.paper and self.live_confirm != self.LIVE_PHRASE:
             raise SystemExit(
                 "PAPER=false but LIVE_TRADING_CONFIRM is not set to the exact phrase:\n"

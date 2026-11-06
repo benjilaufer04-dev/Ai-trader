@@ -1,9 +1,9 @@
 name: Daily review (learn from mistakes)
 
 on:
-  schedule:
-    # Mon-Fri 21:20 UTC = after the US close (23:20 Israel in winter, 00:20 in summer)
-    - cron: "20 21 * * 1-5"
+  # OFF while the scalper runs (it reviews the AI bot's decisions, which the scalper doesn't make)
+  # schedule:
+  #   - cron: "20 21 * * 1-5"
   workflow_dispatch: {}
 
 permissions:

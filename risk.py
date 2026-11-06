@@ -39,6 +39,11 @@ def check(decisions, account, positions, trades_today, settings, market_open=Tru
     buys_blocked = day_pnl_pct <= -settings.daily_loss_limit_pct
     cash = float(account["cash"])
     min_cash = equity * settings.min_cash_reserve_pct
+    if getattr(settings, "aggressive", False):
+        # Margin: spend borrowed buying power too, up to MAX_GROSS_LEVERAGE x equity in total.
+        gross = sum(abs(float(p["market_value"])) for p in positions.values())
+        cash = min(float(account.get("buying_power", cash)), equity * settings.max_gross_leverage - gross)
+        min_cash = 0
     n_positions = len(positions)
     trades_left = settings.max_trades_per_day - trades_today
     seen = set()

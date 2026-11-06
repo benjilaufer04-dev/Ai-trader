@@ -41,6 +41,15 @@ def owner_instructions():
             "add only when it is working, never add to a loser. Every buy MUST include a "
             "stop_loss_price (1.5-4% below the current price) and a take_profit_price at least "
             "2x as far above the price as the stop is below it - code enforces them for you.")
+    if settings.aggressive:
+        out.append(
+            "HIGH-RISK EXPERIMENT (paper money, owner's explicit choice): trade big and use leverage. "
+            "The account has margin (buying_power, up to ~4x equity intraday) and the watchlist holds "
+            "leveraged ETFs (3x/2x) and very volatile stocks. Size real conviction trades at 25-100% of "
+            "equity each. Inverse ETFs (e.g. SQQQ, SOXS) are how you bet on a fall, since shorting is off. "
+            "Still give every buy a stop_loss_price and take_profit_price - wider is fine (up to ~15%), "
+            "and cut losers fast: leverage makes small mistakes big. Before the close, code cuts total "
+            "exposure to under 2x equity, so prefer to be lighter going into the night.")
     if settings.focus:
         out.append("FOCUS: " + settings.focus)
     return out or ["Careful style: only act on clear setups."]
@@ -54,7 +63,8 @@ class Agent:
         self.data = MarketData(settings.alpaca_key, settings.alpaca_secret, crypto=settings.crypto)
         self.brain = Brain(settings.ai_provider, settings.ai_key, settings.ai_model)
         self.journal = Journal(settings.db_path)
-        log.info("Mode: %s%s | %s | AI: %s %s", "PAPER" if settings.paper else "*** LIVE ***",
+        log.info("Mode: %s%s%s | %s | AI: %s %s", "PAPER" if settings.paper else "*** LIVE ***",
+                 " | HIGH-RISK" if settings.aggressive else "",
                  " (dry run)" if dry_run else "", "CRYPTO" if settings.crypto else "STOCKS",
                  settings.ai_provider, settings.ai_model)
 
@@ -89,6 +99,11 @@ class Agent:
                  "qty": o.filled_qty, "avg_price": o.filled_avg_price,
                  "status": str(o.status).split(".")[-1]} for o in orders]
 
+    @staticmethod
+    def part_qty(held, frac):
+        """Quantity for a partial sell (fractional; execute() falls back to whole shares if needed)."""
+        return int(held * frac * 1e6) / 1e6
+
     def execute(self, a: risk.Approved):
         tif = TimeInForce.GTC if settings.crypto else TimeInForce.DAY  # crypto doesn't accept DAY
         if a.side == "buy":
@@ -105,7 +120,24 @@ class Agent:
         if self.dry_run:
             log.info("  [dry-run] would %s %s %s", a.side, a.symbol, a.notional or a.qty)
             return "dry-run", "dry-run"
-        o = self.trading.submit_order(req)
+        try:
+            o = self.trading.submit_order(req)
+        except Exception as e:
+            # Some symbols (several leveraged ETFs) can't be bought in fractions -> buy whole shares.
+            if "fraction" not in str(e).lower():
+                raise
+            if a.side == "sell":  # non-fractionable position: sell whole shares
+                shares = max(1, int(round(a.qty)))
+                o = self.trading.submit_order(MarketOrderRequest(symbol=a.symbol, qty=shares,
+                                                                 side=OrderSide.SELL, time_in_force=tif))
+                return str(o.id), str(o.status)
+            price = (self.data.snapshots([a.symbol]).get(a.symbol) or {}).get("price") or 0
+            shares = int(a.notional // price) if price else 0
+            if shares < 1:
+                raise
+            log.info("  %s not fractionable -> buying %d whole shares", a.symbol, shares)
+            o = self.trading.submit_order(MarketOrderRequest(symbol=a.symbol, qty=shares,
+                                                             side=OrderSide.BUY, time_in_force=tif))
         return str(o.id), str(o.status)
 
     def cycle(self):
@@ -115,6 +147,8 @@ class Agent:
             log.info("Market closed - nothing to do.")
             return
         self._enforce_exits()
+        if settings.aggressive:
+            self._delever_before_close(clock)
         acct, pos = self.account(), self.positions()
         symbols = sorted(set(settings.watchlist) | set(pos))
         snapshots = self.data.snapshots(symbols)
@@ -167,7 +201,7 @@ class Agent:
         actions, levels = exits.check(pos, exits.load(settings.crypto), settings.default_stop_pct)
         for sym, frac, why in actions:
             held = pos[sym]["qty"]
-            qty = held if frac >= 0.999 else int(held * frac * 1e6) / 1e6
+            qty = held if frac >= 0.999 else self.part_qty(held, frac)
             a = risk.Approved(sym, "sell", qty=qty, reasoning=why)
             try:
                 oid, status = self.execute(a)
@@ -179,6 +213,32 @@ class Agent:
             except Exception as e:
                 log.error("  EXIT FAILED %s: %s", sym, e)
         exits.save(settings.crypto, levels)
+
+    def _delever_before_close(self, clock):
+        """Leverage: Alpaca allows ~4x during the day but only 2x overnight.
+        Near the close, trim every position by the same fraction to get under OVERNIGHT_LEVERAGE."""
+        if settings.crypto or not clock.next_close:
+            return
+        minutes_left = (clock.next_close - clock.timestamp).total_seconds() / 60
+        if minutes_left > settings.delever_minutes_before_close:
+            return
+        acct, pos = self.account(), self.positions()
+        gross = sum(abs(p["market_value"]) for p in pos.values())
+        target = acct["equity"] * settings.overnight_leverage
+        if gross <= target or gross <= 0:
+            return
+        frac = min(1.0, (gross - target) / gross + 0.02)
+        log.info("DELEVER before close: exposure %.0f > %.0f (%.1fx), trimming %.0f%% of each position",
+                 gross, target, gross / acct["equity"], frac * 100)
+        for sym, p in pos.items():
+            qty = self.part_qty(p["qty"], frac)
+            if qty <= 0:
+                continue
+            try:
+                self.execute(risk.Approved(sym, "sell", qty=qty, reasoning="overnight leverage limit"))
+                log.info("  TRIM %s %s", sym, qty)
+            except Exception as e:
+                log.error("  TRIM FAILED %s: %s", sym, e)
 
     def _trade(self, cid, decisions, acct, pos, market_open, statuses):
         if not decisions:
@@ -242,6 +302,8 @@ def status():
     t = TradingClient(settings.alpaca_key, settings.alpaca_secret, paper=settings.paper)
     a = t.get_account()
     eq, last = float(a.equity), float(a.last_equity)
+    gross = sum(abs(float(p.market_value)) for p in t.get_all_positions())
+    print(f"LEVERAGE {gross/eq:.2f}x (positions ${gross:,.0f} on equity ${eq:,.0f}) | buying power ${float(a.buying_power):,.0f}")
     print(f"ACCOUNT  value ${eq:,.2f} | today {eq-last:+,.2f} ({(eq/last-1)*100:+.2f}%) | "
           f"total since start {eq-100000:+,.2f} ({(eq/100000-1)*100:+.2f}%) | cash ${float(a.cash):,.2f}")
     pos = t.get_all_positions()
