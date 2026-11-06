@@ -13,6 +13,10 @@ on:
       minutes:
         description: "Stop after N minutes (empty = until the close)"
         required: false
+      force_trade:
+        description: "Take the best trade available right away"
+        type: boolean
+        default: false
       dry_run:
         description: "Dry run (no orders)"
         type: boolean
@@ -52,6 +56,7 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "10 13 * * 1-5" ]; then ARGS="--minutes 270"; fi
           if [ -n "${{ inputs.minutes }}" ]; then ARGS="--minutes ${{ inputs.minutes }}"; fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ inputs.force_trade }}" = "true" ]; then ARGS="$ARGS --force-trade"; fi
           python scalper.py $ARGS
       - name: Save the trade log
         if: always()

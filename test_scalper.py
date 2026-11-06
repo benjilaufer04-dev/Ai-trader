@@ -55,3 +55,11 @@ def test_size_is_big_but_capped():
     assert sc.size(100_000, 400_000, 50, 0) == 3000          # 1.5x equity
     assert sc.size(100_000, 50_000, 50, 1) == 950            # limited by buying power
     assert sc.size(100_000, 400_000, 50, 2) == 0             # max 2 positions
+
+
+def test_best_trend_picks_strongest_uptrend():
+    up = bars([100 + i * 0.05 for i in range(30)])
+    up_more = bars([100 + i * 0.15 for i in range(30)])
+    down = bars([110 - i * 0.2 for i in range(30)])
+    assert sc.best_trend({"A": up, "B": up_more, "C": down}) == "B"
+    assert sc.best_trend({"C": down}) is None

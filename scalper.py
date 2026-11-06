@@ -98,6 +98,22 @@ def entry_signal(df, cfg=CFG):
     return float(vol / vavg) if ok else 0
 
 
+def best_trend(bars):
+    """For a forced trade: the symbol trending up hardest right now
+    (above VWAP and EMA9 > EMA21), ranked by distance above VWAP. None if nothing is trending up."""
+    best, best_score = None, 0
+    for s, df in bars.items():
+        if len(df) < 22:
+            continue
+        ind = indicators(df)
+        c = df["close"].iloc[-1]
+        if c > ind["vwap"].iloc[-1] and ind["ema9"].iloc[-1] > ind["ema21"].iloc[-1]:
+            score = c / ind["vwap"].iloc[-1] - 1
+            if score > best_score:
+                best, best_score = s, score
+    return best
+
+
 def momentum_dead(df):
     if len(df) < 22:
         return False
@@ -213,7 +229,30 @@ class Scalper:
             else:
                 self.close(sym, "not a scalping symbol", float(p.current_price))
 
-    def run(self, minutes=None):
+    def force_entry(self, session_start):
+        """Owner asked for a trade now: buy the strongest up-trend among the scalping symbols."""
+        bars = self.bars(session_start)
+        s = best_trend(bars)
+        if not s:
+            log.info("FORCED TRADE: nothing is trending up right now - not buying into a falling market.")
+            return
+        acct = self.t.get_account()
+        equity = float(acct.equity)
+        price = float(bars[s]["close"].iloc[-1])
+        qty = size(equity, float(acct.buying_power), price, len(self.trades))
+        if qty < 1:
+            log.info("FORCED TRADE: no room (max positions / buying power).")
+            return
+        now = datetime.now(timezone.utc)
+        fill = self.order(s, qty, OrderSide.BUY) or price
+        self.trades[s] = {"entry": fill, "qty": qty, "stop": fill * (1 - CFG["stop_pct"]),
+                          "target": fill * (1 + CFG["target_pct"]), "opened": now, "best": fill}
+        log.info("FORCED ENTRY %s %d @ %.2f (= $%s) | stop %.2f target %.2f", s, qty, fill,
+                 f"{qty*fill:,.0f}", self.trades[s]["stop"], self.trades[s]["target"])
+        self.record({"ts": now.isoformat(timespec="seconds"), "symbol": s, "side": "buy", "qty": qty,
+                     "entry": fill, "forced": True})
+
+    def run(self, minutes=None, force=False):
         clock = self.t.get_clock()
         while not clock.is_open:
             wait = (clock.next_open - clock.timestamp).total_seconds()
@@ -229,6 +268,8 @@ class Scalper:
         log.info("Scalping %s until %s | position %.1fx equity, max %d at once",
                  ",".join(CFG["symbols"]), min(stop_at, close_at), CFG["position_x"], CFG["max_positions"])
         self.adopt_positions()
+        if force:
+            self.force_entry(session_start)
 
         while True:
             now = datetime.now(timezone.utc)
@@ -325,5 +366,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--minutes", type=float, help="stop after N minutes (GitHub jobs max out at 6h)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force-trade", action="store_true", help="take the best trade available right away")
     args = ap.parse_args()
-    Scalper(dry_run=args.dry_run).run(args.minutes)
+    Scalper(dry_run=args.dry_run).run(args.minutes, force=args.force_trade)
