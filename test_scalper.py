@@ -70,3 +70,15 @@ def test_no_chasing_extended_moves():
     closes = [100] * 25 + [101, 102, 103, 104, 105] + [106.5]
     vols = [1000] * 30 + [3000]
     assert sc.entry_signal(bars(closes, vols)) == 0
+
+
+def test_backtest_breakdown_groups_by_symbol_and_time():
+    import backtest as bt
+    trades = [{"symbol": "TQQQ", "pnl": 100.0, "entry_min": 10},
+              {"symbol": "TQQQ", "pnl": -50.0, "entry_min": 40},
+              {"symbol": "NVDA", "pnl": -20.0, "entry_min": 45}]
+    b = bt.breakdown(trades)
+    assert b["by_symbol"]["TQQQ"] == {"n": 2, "pnl": 50.0, "pf": 2.0}
+    assert b["by_symbol"]["NVDA"]["pf"] == 0
+    assert b["by_entry_time"]["030-059m"]["n"] == 2
+    assert bt.breakdown([]) == {"by_symbol": {}, "by_entry_time": {}}

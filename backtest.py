@@ -130,7 +130,7 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     exit_px *= (1 - slip)
                     trades.append({"day": str(day), "symbol": s, "entry": t["entry"], "exit": exit_px,
                                    "usd": t["usd"], "pnl": (exit_px / t["entry"] - 1) * t["usd"],
-                                   "why": why, "minutes": m - t["m"]})
+                                   "why": why, "minutes": m - t["m"], "entry_min": t["m"]})
                     del open_pos[s]
                     cooldown[s] = m + cfg["cooldown_min"]
             # 2) entries: signal on the bar that closed at minute m-1 -> buy this bar's open
@@ -190,6 +190,24 @@ def stats(trades, days):
     return {k: (float(v) if isinstance(v, (np.floating, np.integer)) else v) for k, v in r.items()}
 
 
+def breakdown(trades):
+    """P/L split by symbol and by entry time (30-min buckets after the open), to find filters
+    that remove losers on BOTH train and test before changing the live bot."""
+    if not trades:
+        return {"by_symbol": {}, "by_entry_time": {}}
+    df = pd.DataFrame(trades)
+    df["bucket"] = (df["entry_min"] // 30 * 30).astype(int).map(lambda b: f"{b:03d}-{b + 29:03d}m")
+
+    def agg(col):
+        out = {}
+        for k, g in df.groupby(col):
+            w, l = g[g.pnl > 0].pnl.sum(), -g[g.pnl <= 0].pnl.sum()
+            out[str(k)] = {"n": int(len(g)), "pnl": round(float(g.pnl.sum()), 0),
+                           "pf": round(float(w / l), 2) if l > 0 else 99}
+        return out
+    return {"by_symbol": agg("symbol"), "by_entry_time": agg("bucket")}
+
+
 def current_cfg():
     cfg = dict(sc.CFG)
     if os.path.exists(PARAMS_FILE):
@@ -245,6 +263,14 @@ def main():
     lines += ["## Current settings", json.dumps(cur), "",
               f"- ALL : {res['current']['all']}", f"- TRAIN: {res['current']['train']}",
               f"- TEST : {res['current']['test']}", ""]
+    bd_train = breakdown(simulate(bars, train, base))
+    bd_test = breakdown(simulate(bars, test, base))
+    res["current"]["breakdown"] = {"train": bd_train, "test": bd_test}
+    lines += ["## Current settings: where the P/L comes from (look for losers on BOTH train and test)"]
+    for part in ("by_symbol", "by_entry_time"):
+        lines.append(f"- {part} TRAIN: {bd_train[part]}")
+        lines.append(f"- {part} TEST : {bd_test[part]}")
+    lines.append("")
 
     if a.inverse:
         lines.append("## 'Do the opposite' test (signal on X -> buy the inverse fund; TSLA/NVDA skipped)")
