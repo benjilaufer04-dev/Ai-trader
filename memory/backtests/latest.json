@@ -12,53 +12,53 @@
   },
   "all": {
    "trades": 86,
-   "pnl": 1400.0,
+   "pnl": 1460.0,
    "win_rate": 0.256,
-   "profit_factor": 1.12,
+   "profit_factor": 1.13,
    "max_drawdown": -4803.0,
    "avg_win": 589.0,
    "avg_loss": -180.0,
-   "per_day": 23.0,
+   "per_day": 24.0,
    "green_days": "15/60",
    "exits": {
     "momentum": 52,
     "eod": 14,
-    "time": 13,
-    "stop": 4,
+    "time": 12,
+    "stop": 5,
     "target": 3
    }
   },
   "train": {
    "trades": 59,
-   "pnl": -2513.0,
+   "pnl": -2633.0,
    "win_rate": 0.186,
-   "profit_factor": 0.7,
-   "max_drawdown": -4776.0,
+   "profit_factor": 0.69,
+   "max_drawdown": -4803.0,
    "avg_win": 526.0,
-   "avg_loss": -173.0,
-   "per_day": -63.0,
+   "avg_loss": -175.0,
+   "per_day": -66.0,
    "green_days": "7/40",
    "exits": {
-    "momentum": 38,
-    "time": 11,
+    "momentum": 39,
+    "time": 10,
     "eod": 9,
     "target": 1
    }
   },
   "test": {
    "trades": 27,
-   "pnl": 3914.0,
+   "pnl": 4093.0,
    "win_rate": 0.407,
-   "profit_factor": 2.21,
+   "profit_factor": 2.33,
    "max_drawdown": -852.0,
    "avg_win": 651.0,
-   "avg_loss": -203.0,
-   "per_day": 196.0,
+   "avg_loss": -192.0,
+   "per_day": 205.0,
    "green_days": "8/20",
    "exits": {
-    "momentum": 14,
+    "momentum": 13,
+    "stop": 5,
     "eod": 5,
-    "stop": 4,
     "time": 2,
     "target": 2
    }
@@ -67,9 +67,9 @@
    "train": {
     "by_symbol": {
      "NVDA": {
-      "n": 6,
-      "pnl": -602.0,
-      "pf": 0.07
+      "n": 4,
+      "pnl": -377.0,
+      "pf": 0.1
      },
      "SOXL": {
       "n": 10,
@@ -77,8 +77,8 @@
       "pf": 1.21
      },
      "SOXS": {
-      "n": 5,
-      "pnl": -995.0,
+      "n": 6,
+      "pnl": -1329.0,
       "pf": 0.0
      },
      "SQQQ": {
@@ -92,9 +92,9 @@
       "pf": 0.5
      },
      "TSLA": {
-      "n": 6,
-      "pnl": 828.0,
-      "pf": 2.52
+      "n": 7,
+      "pnl": 817.0,
+      "pf": 2.47
      }
     },
     "by_entry_time": {
@@ -110,13 +110,13 @@
      },
      "060-089m": {
       "n": 21,
-      "pnl": -997.0,
-      "pf": 0.71
+      "pnl": -802.0,
+      "pf": 0.75
      },
      "090-119m": {
       "n": 19,
-      "pnl": -1180.0,
-      "pf": 0.51
+      "pnl": -1495.0,
+      "pf": 0.45
      }
     }
    },
@@ -133,14 +133,14 @@
       "pf": 0.0
      },
      "SOXS": {
-      "n": 6,
-      "pnl": 1746.0,
-      "pf": 2.78
+      "n": 5,
+      "pnl": 2081.0,
+      "pf": 4.22
      },
      "SQQQ": {
-      "n": 3,
-      "pnl": 3043.0,
-      "pf": 99
+      "n": 4,
+      "pnl": 3033.0,
+      "pf": 307.37
      },
      "TQQQ": {
       "n": 7,
@@ -149,8 +149,8 @@
      },
      "TSLA": {
       "n": 3,
-      "pnl": -302.0,
-      "pf": 0.3
+      "pnl": -448.0,
+      "pf": 0.22
      }
     },
     "by_entry_time": {
@@ -165,14 +165,14 @@
       "pf": 2.18
      },
      "060-089m": {
-      "n": 6,
-      "pnl": -111.0,
-      "pf": 0.88
+      "n": 7,
+      "pnl": -266.0,
+      "pf": 0.75
      },
      "090-119m": {
-      "n": 11,
-      "pnl": 2506.0,
-      "pf": 4.19
+      "n": 10,
+      "pnl": 2841.0,
+      "pf": 7.3
      }
     }
    }
@@ -191,54 +191,54 @@
   },
   "train": {
    "trades": 59,
-   "pnl": -2513.0,
+   "pnl": -2633.0,
    "win_rate": 0.186,
-   "profit_factor": 0.7,
-   "max_drawdown": -4776.0,
+   "profit_factor": 0.69,
+   "max_drawdown": -4803.0,
    "avg_win": 526.0,
-   "avg_loss": -173.0,
-   "per_day": -63.0,
+   "avg_loss": -175.0,
+   "per_day": -66.0,
    "green_days": "7/40",
    "exits": {
-    "momentum": 38,
-    "time": 11,
+    "momentum": 39,
+    "time": 10,
     "eod": 9,
     "target": 1
    }
   },
   "test": {
    "trades": 27,
-   "pnl": 3914.0,
+   "pnl": 4093.0,
    "win_rate": 0.407,
-   "profit_factor": 2.21,
+   "profit_factor": 2.33,
    "max_drawdown": -852.0,
    "avg_win": 651.0,
-   "avg_loss": -203.0,
-   "per_day": 196.0,
+   "avg_loss": -192.0,
+   "per_day": 205.0,
    "green_days": "8/20",
    "exits": {
-    "momentum": 14,
+    "momentum": 13,
+    "stop": 5,
     "eod": 5,
-    "stop": 4,
     "time": 2,
     "target": 2
    }
   },
   "all": {
    "trades": 86,
-   "pnl": 1400.0,
+   "pnl": 1460.0,
    "win_rate": 0.256,
-   "profit_factor": 1.12,
+   "profit_factor": 1.13,
    "max_drawdown": -4803.0,
    "avg_win": 589.0,
    "avg_loss": -180.0,
-   "per_day": 23.0,
+   "per_day": 24.0,
    "green_days": "15/60",
    "exits": {
     "momentum": 52,
     "eod": 14,
-    "time": 13,
-    "stop": 4,
+    "time": 12,
+    "stop": 5,
     "target": 3
    }
   }
