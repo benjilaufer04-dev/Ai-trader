@@ -221,11 +221,23 @@ class Scalper:
                 raise
             qty = qty2
             o = self.t.submit_order(MarketOrderRequest(symbol=sym, qty=qty, side=side, time_in_force=TimeInForce.DAY))
-        for _ in range(10):
+        return self.wait_fill(o, qty)
+
+    def wait_fill(self, o, qty, tries=20):
+        """Wait (up to ~10s) until the order is FULLY filled, then return (avg fill price, filled qty).
+        Waiting for the full fill matters: a stop order sent while the buy is still partly open is
+        rejected by the broker as a 'potential wash trade' (happened 2026-11-10 on SQQQ)."""
+        for _ in range(tries):
             time.sleep(0.5)
-            o = self.t.get_order_by_id(o.id)
-            if o.filled_avg_price:
-                return float(o.filled_avg_price), qty
+            try:
+                o = self.t.get_order_by_id(o.id)
+            except Exception:
+                continue
+            status = str(getattr(o.status, "value", o.status)).lower()
+            if status == "filled" and o.filled_avg_price:
+                return float(o.filled_avg_price), int(float(o.filled_qty or qty))
+        if getattr(o, "filled_avg_price", None):
+            return float(o.filled_avg_price), int(float(o.filled_qty or qty))
         return None, qty
 
     def record(self, row):
@@ -299,14 +311,17 @@ class Scalper:
         try:
             if not self.dry:
                 self.cancel_orders(sym)  # free the shares held by the stop order
-                self.t.close_position(sym)
+                o = self.t.close_position(sym)
+                # log the real fill, not the last quote, so live P/L matches the account
+                fill, _ = self.wait_fill(o, tr["qty"] if tr else 0) if getattr(o, "id", None) else (None, 0)
+                price = fill or price
         except Exception as e:
             log.error("  CLOSE FAILED %s: %s", sym, e)
             return
         self.cooldown[sym] = datetime.now(timezone.utc) + timedelta(minutes=CFG["cooldown_min"])
         if tr:
             pnl = (price - tr["entry"]) * tr["qty"]
-            log.info("EXIT  %-5s %d @ ~%.2f  P/L %+.2f (%+.2f%%)  [%s]", sym, tr["qty"], price, pnl,
+            log.info("EXIT  %-5s %d @ %.2f  P/L %+.2f (%+.2f%%)  [%s]", sym, tr["qty"], price, pnl,
                      (price / tr["entry"] - 1) * 100, reason)
             self.record({"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "symbol": sym,
                          "side": "sell", "qty": tr["qty"], "entry": tr["entry"], "exit": price,

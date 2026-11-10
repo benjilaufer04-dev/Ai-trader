@@ -82,3 +82,48 @@ def test_backtest_breakdown_groups_by_symbol_and_time():
     assert b["by_symbol"]["NVDA"]["pf"] == 0
     assert b["by_entry_time"]["030-059m"]["n"] == 2
     assert bt.breakdown([]) == {"by_symbol": {}, "by_entry_time": {}}
+
+
+class _O:
+    def __init__(self, status, price=None, qty=None, id="x"):
+        self.id, self.status, self.filled_avg_price, self.filled_qty = id, status, price, qty
+
+
+class _T:
+    """Fake broker: the order is partly filled first, then fully filled."""
+    def __init__(self, seq):
+        self.seq = list(seq)
+
+    def get_order_by_id(self, _id):
+        return self.seq.pop(0) if len(self.seq) > 1 else self.seq[0]
+
+
+def _bot(seq, monkeypatch):
+    monkeypatch.setattr(sc.time, "sleep", lambda *_: None)
+    b = sc.Scalper.__new__(sc.Scalper)
+    b.t = _T(seq)
+    return b
+
+
+def test_wait_fill_waits_for_full_fill(monkeypatch):
+    from alpaca.trading.enums import OrderStatus
+    b = _bot([_O(OrderStatus.PARTIALLY_FILLED, "43.9", "300"), _O(OrderStatus.FILLED, "43.98", "737")], monkeypatch)
+    assert b.wait_fill(_O("new"), 737) == (43.98, 737)
+
+
+def test_wait_fill_gives_up_with_partial(monkeypatch):
+    b = _bot([_O("partially_filled", "10.0", "5")], monkeypatch)
+    assert b.wait_fill(_O("new"), 9, tries=3) == (10.0, 5)
+
+
+def test_close_records_real_fill_not_quote(monkeypatch, tmp_path):
+    monkeypatch.setattr(sc, "TRADES", str(tmp_path / "t.jsonl"))
+    b = _bot([_O("filled", "44.20", "737")], monkeypatch)
+    b.dry, b.cooldown = False, {}
+    b.trades = {"SQQQ": {"entry": 43.98, "qty": 737}}
+    b.cancel_orders = lambda s: None
+    b.t.close_position = lambda s: _O("new")
+    b.close("SQQQ", "test", 44.23)
+    import json
+    row = json.loads(open(tmp_path / "t.jsonl").read())
+    assert row["exit"] == 44.20 and row["pnl"] == round((44.20 - 43.98) * 737, 2)
