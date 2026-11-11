@@ -17,3 +17,5 @@
 {"ts": "2026-11-10T15:41:16+00:00", "symbol": "TSLA", "side": "sell", "qty": 85, "entry": 377.6619, "exit": 375.742, "pnl": -163.19, "reason": "momentum faded (EMA9<EMA21, below VWAP)", "note": "entry/exit corrected to broker fills"}
 {"ts": "2026-11-10T15:51:02+00:00", "symbol": "SQQQ", "side": "buy", "qty": 737, "entry": 43.9834, "signal_volume_x": 3.92}
 {"ts": "2026-11-10T19:00:16+00:00", "symbol": "SQQQ", "side": "sell", "qty": 737, "entry": 43.9834, "exit": 44.2, "pnl": 159.66, "reason": "run time limit - handing over flat", "note": "entry/exit corrected to broker fills"}
+{"ts": "2026-11-11T15:51:19+00:00", "symbol": "TQQQ", "side": "buy", "qty": 536, "entry": 60.49, "signal_volume_x": 3.15}
+{"ts": "2026-11-11T19:00:19+00:00", "symbol": "TQQQ", "side": "sell", "qty": 536, "entry": 60.49, "exit": 61.548004, "pnl": 567.09, "reason": "run time limit - handing over flat"}
