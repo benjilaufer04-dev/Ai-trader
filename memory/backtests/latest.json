@@ -11,67 +11,61 @@
    "entry_window_min": 120
   },
   "all": {
-   "trades": 86,
-   "pnl": 1694.0,
-   "win_rate": 0.267,
-   "profit_factor": 1.15,
-   "max_drawdown": -4803.0,
-   "avg_win": 563.0,
-   "avg_loss": -179.0,
-   "per_day": 28.0,
+   "trades": 77,
+   "pnl": 2633.0,
+   "win_rate": 0.286,
+   "profit_factor": 1.26,
+   "max_drawdown": -4501.0,
+   "avg_win": 587.0,
+   "avg_loss": -187.0,
+   "per_day": 44.0,
    "green_days": "16/60",
    "exits": {
-    "momentum": 52,
+    "momentum": 46,
     "eod": 14,
-    "time": 12,
+    "time": 9,
     "stop": 5,
     "target": 3
    }
   },
   "train": {
-   "trades": 59,
-   "pnl": -1837.0,
-   "win_rate": 0.203,
-   "profit_factor": 0.78,
-   "max_drawdown": -4803.0,
-   "avg_win": 530.0,
-   "avg_loss": -174.0,
-   "per_day": -46.0,
+   "trades": 55,
+   "pnl": -1460.0,
+   "win_rate": 0.2,
+   "profit_factor": 0.81,
+   "max_drawdown": -4501.0,
+   "avg_win": 574.0,
+   "avg_loss": -177.0,
+   "per_day": -37.0,
    "green_days": "8/40",
    "exits": {
-    "momentum": 38,
-    "time": 10,
+    "momentum": 35,
     "eod": 9,
+    "time": 9,
     "target": 1,
     "stop": 1
    }
   },
   "test": {
-   "trades": 27,
-   "pnl": 3531.0,
-   "win_rate": 0.407,
-   "profit_factor": 2.15,
-   "max_drawdown": -852.0,
+   "trades": 22,
+   "pnl": 4093.0,
+   "win_rate": 0.5,
+   "profit_factor": 2.64,
+   "max_drawdown": -778.0,
    "avg_win": 600.0,
-   "avg_loss": -192.0,
-   "per_day": 177.0,
+   "avg_loss": -228.0,
+   "per_day": 205.0,
    "green_days": "8/20",
    "exits": {
-    "momentum": 14,
+    "momentum": 11,
     "eod": 5,
     "stop": 4,
-    "time": 2,
     "target": 2
    }
   },
   "breakdown": {
    "train": {
     "by_symbol": {
-     "NVDA": {
-      "n": 4,
-      "pnl": -377.0,
-      "pf": 0.1
-     },
      "SOXL": {
       "n": 10,
       "pnl": 405.0,
@@ -110,9 +104,9 @@
       "pf": 0.93
      },
      "060-089m": {
-      "n": 20,
-      "pnl": -576.0,
-      "pf": 0.81
+      "n": 16,
+      "pnl": -199.0,
+      "pf": 0.92
      },
      "090-119m": {
       "n": 20,
@@ -123,11 +117,6 @@
    },
    "test": {
     "by_symbol": {
-     "NVDA": {
-      "n": 5,
-      "pnl": -562.0,
-      "pf": 0.0
-     },
      "SOXL": {
       "n": 3,
       "pnl": -651.0,
@@ -161,9 +150,9 @@
       "pf": 0.0
      },
      "030-059m": {
-      "n": 9,
-      "pnl": 1657.0,
-      "pf": 2.18
+      "n": 6,
+      "pnl": 2124.0,
+      "pf": 3.27
      },
      "060-089m": {
       "n": 8,
@@ -171,9 +160,9 @@
       "pf": 0.76
      },
      "090-119m": {
-      "n": 9,
-      "pnl": 2271.0,
-      "pf": 6.03
+      "n": 7,
+      "pnl": 2367.0,
+      "pf": 7.66
      }
     }
    }
@@ -181,64 +170,66 @@
  },
  "tuned": {
   "params": {
-   "stop_pct": 0.024,
-   "target_pct": 0.072,
-   "vol_mult": 2.0,
-   "max_extension": 0.02,
+   "stop_pct": 0.016,
+   "target_pct": 0.032,
+   "vol_mult": 3.0,
+   "max_extension": 0.04,
    "time_stop_min": 30,
-   "position_x": 0.33,
-   "momentum_exit": 0,
-   "entry_window_min": 999
+   "position_x": 0.5,
+   "momentum_exit": 1,
+   "entry_window_min": 120
   },
   "train": {
-   "trades": 142,
-   "pnl": 102.0,
-   "win_rate": 0.366,
-   "profit_factor": 1.0,
-   "max_drawdown": -7025.0,
-   "avg_win": 459.0,
-   "avg_loss": -264.0,
-   "per_day": 3.0,
-   "green_days": "14/40",
+   "trades": 60,
+   "pnl": -1161.0,
+   "win_rate": 0.217,
+   "profit_factor": 0.91,
+   "max_drawdown": -3429.0,
+   "avg_win": 912.0,
+   "avg_loss": -277.0,
+   "per_day": -29.0,
+   "green_days": "10/40",
    "exits": {
-    "eod": 73,
-    "time": 55,
-    "stop": 13,
-    "target": 1
+    "momentum": 30,
+    "time": 10,
+    "eod": 8,
+    "stop": 8,
+    "target": 4
    }
   },
   "test": {
-   "trades": 82,
-   "pnl": -3679.0,
-   "win_rate": 0.341,
-   "profit_factor": 0.81,
-   "max_drawdown": -5313.0,
-   "avg_win": 549.0,
-   "avg_loss": -353.0,
-   "per_day": -184.0,
-   "green_days": "8/20",
+   "trades": 25,
+   "pnl": 8898.0,
+   "win_rate": 0.56,
+   "profit_factor": 3.12,
+   "max_drawdown": -1178.0,
+   "avg_win": 936.0,
+   "avg_loss": -382.0,
+   "per_day": 445.0,
+   "green_days": "11/20",
    "exits": {
-    "eod": 33,
-    "time": 28,
-    "stop": 19,
-    "target": 2
+    "momentum": 10,
+    "stop": 6,
+    "target": 6,
+    "eod": 3
    }
   },
   "all": {
-   "trades": 224,
-   "pnl": -3577.0,
-   "win_rate": 0.357,
-   "profit_factor": 0.92,
-   "max_drawdown": -7025.0,
-   "avg_win": 490.0,
+   "trades": 85,
+   "pnl": 7737.0,
+   "win_rate": 0.318,
+   "profit_factor": 1.45,
+   "max_drawdown": -3429.0,
+   "avg_win": 924.0,
    "avg_loss": -297.0,
-   "per_day": -60.0,
-   "green_days": "22/60",
+   "per_day": 129.0,
+   "green_days": "21/60",
    "exits": {
-    "eod": 106,
-    "time": 83,
-    "stop": 32,
-    "target": 3
+    "momentum": 40,
+    "stop": 14,
+    "eod": 11,
+    "time": 10,
+    "target": 10
    }
   }
  },
