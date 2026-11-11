@@ -23,6 +23,9 @@ on:
         description: "Adopt better settings if they pass"
         type: boolean
         default: true
+      symbols:
+        description: "Test a different symbol list (report only, never adopts), e.g. TQQQ,SQQQ,SOXL,SOXS,TSLA"
+        default: ""
 
 concurrency: backtest
 
@@ -44,10 +47,12 @@ jobs:
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-          SCALP_SYMBOLS: "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA"
+          SCALP_SYMBOLS: ${{ inputs.symbols || 'TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA' }}
         run: |
           ADOPT="--adopt"
           if [ "${{ inputs.adopt }}" = "false" ]; then ADOPT=""; fi
+          # a symbol-list experiment is report-only: it must never change the live settings
+          if [ -n "${{ inputs.symbols }}" ]; then ADOPT=""; fi
           if [ "${{ inputs.setups }}" = "true" ]; then
             python setups.py --days ${{ inputs.days || '60' }}
           elif [ "${{ inputs.inverse }}" = "true" ]; then
