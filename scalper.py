@@ -55,7 +55,7 @@ def _f(n, d):
 
 CFG = {
     "symbols": [s.strip().upper() for s in os.getenv(
-        "SCALP_SYMBOLS", "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA").split(",") if s.strip()],
+        "SCALP_SYMBOLS", "TQQQ,SQQQ,SOXL,SOXS,TSLA").split(",") if s.strip()],
     "position_x": _f("POSITION_X", 1.0),        # each position = 1x equity
     "max_positions": int(_f("MAX_POSITIONS", 2)),
     "stop_pct": _f("STOP_PCT", 0.008),

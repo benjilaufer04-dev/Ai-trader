@@ -49,7 +49,7 @@ jobs:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           PAPER: "true"
-          SCALP_SYMBOLS: "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA"
+          SCALP_SYMBOLS: "TQQQ,SQQQ,SOXL,SOXS,TSLA"
           POSITION_X: "1.0"       # each position = 1x account equity (2 open = 2x, borrowed)
           MAX_POSITIONS: "2"
           STOP_PCT: "0.008"       # -0.8% stop (real stop order at the broker)

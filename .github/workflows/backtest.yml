@@ -47,7 +47,7 @@ jobs:
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-          SCALP_SYMBOLS: ${{ inputs.symbols || 'TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA' }}
+          SCALP_SYMBOLS: ${{ inputs.symbols || 'TQQQ,SQQQ,SOXL,SOXS,TSLA' }}
         run: |
           ADOPT="--adopt"
           if [ "${{ inputs.adopt }}" = "false" ]; then ADOPT=""; fi
