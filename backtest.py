@@ -234,6 +234,15 @@ def grid(base):
                           momentum_exit=mom, entry_window_min=win)
 
 
+def should_adopt(train, test, cur_test, equity=100_000):
+    """Auto-adopt only settings that meet goal.md criterion 1 on the unseen TEST days
+    (profit > 0, profit factor >= 1.3), keep TEST drawdown under 5% of the account,
+    make money on TRAIN too, and beat the current settings on TEST."""
+    return (test["trades"] >= 5 and test["pnl"] > 0 and test["pnl"] > cur_test["pnl"]
+            and test["profit_factor"] >= 1.3 and test["max_drawdown"] > -0.05 * equity
+            and train["pnl"] > 0)
+
+
 def score_fn(s):
     """Rank settings: needs enough trades; reward profit, punish drawdown."""
     if s["trades"] < 30:
@@ -303,8 +312,7 @@ def main():
         res["tuned"] = {"params": best[0], "train": best[1], "test": best[2],
                         "all": stats(simulate(bars, days, best[3]), days)}
         cur_test = res["current"]["test"]
-        passed = (best[2]["pnl"] > 0 and best[2]["trades"] >= 5 and best[2]["pnl"] > cur_test["pnl"]
-                  and best[1]["pnl"] > 0)
+        passed = should_adopt(best[1], best[2], cur_test)
         res["adopted"] = bool(passed and a.adopt)
         verdict = ("ADOPTED: new settings profitable on unseen days and better than current."
                    if res["adopted"] else

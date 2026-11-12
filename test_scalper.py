@@ -127,3 +127,15 @@ def test_close_records_real_fill_not_quote(monkeypatch, tmp_path):
     import json
     row = json.loads(open(tmp_path / "t.jsonl").read())
     assert row["exit"] == 44.20 and row["pnl"] == round((44.20 - 43.98) * 737, 2)
+
+
+def test_adoption_needs_goal_pf_and_small_drawdown():
+    import backtest as bt
+    cur = {"pnl": 1000.0}
+    ok_train = {"pnl": 500.0}
+    good = {"trades": 20, "pnl": 3000.0, "profit_factor": 1.5, "max_drawdown": -2000.0}
+    assert bt.should_adopt(ok_train, good, cur)
+    assert not bt.should_adopt(ok_train, dict(good, profit_factor=1.1), cur)   # weak edge
+    assert not bt.should_adopt(ok_train, dict(good, max_drawdown=-6000.0), cur)  # >5% drawdown
+    assert not bt.should_adopt({"pnl": -1.0}, good, cur)                        # loses on train
+    assert not bt.should_adopt(ok_train, dict(good, pnl=900.0), cur)            # not better
