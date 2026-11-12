@@ -1,14 +1,47 @@
 {
- "updated": "2026-11-06T18:50",
- "note": "Manual: most selective settings from the 60-day backtest (least-bad, ~break-even). Nightly tuning replaces it only if something beats it on unseen days.",
+ "updated": "2026-11-12T22:23+00:00",
  "params": {
-  "stop_pct": 0.024,
+  "stop_pct": 0.016,
   "target_pct": 0.048,
-  "vol_mult": 3.0,
+  "vol_mult": 2.0,
   "max_extension": 0.02,
-  "time_stop_min": 30,
-  "position_x": 0.33,
+  "time_stop_min": 999,
+  "position_x": 0.5,
   "momentum_exit": 1,
   "entry_window_min": 120
+ },
+ "test": {
+  "trades": 49,
+  "pnl": 6409.0,
+  "win_rate": 0.347,
+  "profit_factor": 1.5,
+  "max_drawdown": -2647.0,
+  "avg_win": 1127.0,
+  "avg_loss": -399.0,
+  "per_day": 320.0,
+  "green_days": "11/20",
+  "exits": {
+   "momentum": 24,
+   "stop": 15,
+   "eod": 6,
+   "target": 4
+  }
+ },
+ "train": {
+  "trades": 104,
+  "pnl": 2283.0,
+  "win_rate": 0.24,
+  "profit_factor": 1.11,
+  "max_drawdown": -7946.0,
+  "avg_win": 941.0,
+  "avg_loss": -269.0,
+  "per_day": 57.0,
+  "green_days": "12/40",
+  "exits": {
+   "momentum": 73,
+   "eod": 17,
+   "stop": 9,
+   "target": 5
+  }
  }
 }
