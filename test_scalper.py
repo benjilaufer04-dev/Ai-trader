@@ -139,3 +139,11 @@ def test_adoption_needs_goal_pf_and_small_drawdown():
     assert not bt.should_adopt(ok_train, dict(good, max_drawdown=-6000.0), cur)  # >5% drawdown
     assert not bt.should_adopt({"pnl": -1.0}, good, cur)                        # loses on train
     assert not bt.should_adopt(ok_train, dict(good, pnl=900.0), cur)            # not better
+
+
+def test_stops_early_only_when_flat_and_past_entry_window():
+    cfg = dict(sc.CFG, entry_window_min=120)
+    assert sc.nothing_left_today(0, 121, cfg)
+    assert not sc.nothing_left_today(1, 121, cfg)      # still managing a trade
+    assert not sc.nothing_left_today(0, 60, cfg)       # still looking for entries
+    assert not sc.nothing_left_today(0, 300, dict(cfg, entry_window_min=999))

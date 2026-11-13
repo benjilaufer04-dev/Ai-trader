@@ -159,6 +159,12 @@ def manage(trade, price, now, cfg=CFG):
     return None
 
 
+def nothing_left_today(n_open, since_open_min, cfg=CFG):
+    """True when the run can stop early: flat and past the entry window (no new trades can open).
+    Trading is identical either way; stopping saves GitHub Actions minutes (free minutes ran out 2026-11-13)."""
+    return n_open == 0 and since_open_min > cfg["entry_window_min"]
+
+
 def size(equity, buying_power, price, n_open, cfg=CFG):
     usd = min(equity * cfg["position_x"], buying_power * 0.95)
     return int(usd // price) if price > 0 and n_open < cfg["max_positions"] else 0
@@ -399,6 +405,9 @@ class Scalper:
                 for s in list(self.trades):
                     self.close(s, "run time limit - handing over flat", self.prices([s]).get(s, self.trades[s]["entry"]))
                 log.info("Run time limit reached, next run takes over.")
+                break
+            if nothing_left_today(len(self.trades), (now - session_start).total_seconds() / 60):
+                log.info("Entry window over and flat - nothing left to do today, stopping early.")
                 break
             try:
                 self.step(now, session_start, to_close)
