@@ -171,6 +171,250 @@
    }
   }
  },
+ "patterns": [
+  {
+   "feature": "distance above VWAP",
+   "bucket": "0.5-1%",
+   "train_n": 36,
+   "train_pf": 1.21,
+   "train_pnl": 1556,
+   "test_n": 16,
+   "test_pf": 1.26,
+   "test_pnl": 717,
+   "flag": ""
+  },
+  {
+   "feature": "distance above VWAP",
+   "bucket": "1-2%",
+   "train_n": 26,
+   "train_pf": 1.42,
+   "train_pnl": 3246,
+   "test_n": 19,
+   "test_pf": 1.04,
+   "test_pnl": 291,
+   "flag": ""
+  },
+  {
+   "feature": "distance above VWAP",
+   "bucket": "<0.5%",
+   "train_n": 45,
+   "train_pf": 0.59,
+   "train_pnl": -3094,
+   "test_n": 12,
+   "test_pf": 3.38,
+   "test_pnl": 4006,
+   "flag": ""
+  },
+  {
+   "feature": "entry time",
+   "bucket": "30-60m",
+   "train_n": 43,
+   "train_pf": 0.73,
+   "train_pnl": -2461,
+   "test_n": 16,
+   "test_pf": 1.74,
+   "test_pnl": 3159,
+   "flag": ""
+  },
+  {
+   "feature": "entry time",
+   "bucket": "60-120m",
+   "train_n": 58,
+   "train_pf": 1.49,
+   "train_pnl": 5400,
+   "test_n": 27,
+   "test_pf": 1.58,
+   "test_pnl": 3470,
+   "flag": ""
+  },
+  {
+   "feature": "entry time",
+   "bucket": "first 30m",
+   "train_n": 5,
+   "train_pf": 0.62,
+   "train_pnl": -834,
+   "test_n": 4,
+   "test_pf": 0.0,
+   "test_pnl": -1615,
+   "flag": ""
+  },
+  {
+   "feature": "entry time",
+   "bucket": "later",
+   "train_n": 1,
+   "train_pf": 0.0,
+   "train_pnl": -397,
+   "test_n": 0,
+   "test_pf": 99,
+   "test_pnl": 0,
+   "flag": ""
+  },
+  {
+   "feature": "market (QQQ)",
+   "bucket": "against",
+   "train_n": 10,
+   "train_pf": 2.19,
+   "train_pnl": 1930,
+   "test_n": 1,
+   "test_pf": 99,
+   "test_pnl": 2384,
+   "flag": ""
+  },
+  {
+   "feature": "market (QQQ)",
+   "bucket": "mixed",
+   "train_n": 27,
+   "train_pf": 0.98,
+   "train_pnl": -114,
+   "test_n": 13,
+   "test_pf": 0.48,
+   "test_pnl": -2020,
+   "flag": ""
+  },
+  {
+   "feature": "market (QQQ)",
+   "bucket": "with",
+   "train_n": 70,
+   "train_pf": 0.99,
+   "train_pnl": -108,
+   "test_n": 33,
+   "test_pf": 1.58,
+   "test_pnl": 4649,
+   "flag": ""
+  },
+  {
+   "feature": "move since the open",
+   "bucket": "0-2%",
+   "train_n": 58,
+   "train_pf": 1.14,
+   "train_pnl": 1770,
+   "test_n": 27,
+   "test_pf": 1.42,
+   "test_pnl": 2518,
+   "flag": ""
+  },
+  {
+   "feature": "move since the open",
+   "bucket": "2-5%",
+   "train_n": 18,
+   "train_pf": 1.01,
+   "train_pnl": 44,
+   "test_n": 7,
+   "test_pf": 1.4,
+   "test_pnl": 1019,
+   "flag": ""
+  },
+  {
+   "feature": "move since the open",
+   "bucket": "5%+",
+   "train_n": 0,
+   "train_pf": 99,
+   "train_pnl": 0,
+   "test_n": 1,
+   "test_pf": 0.0,
+   "test_pnl": -5,
+   "flag": ""
+  },
+  {
+   "feature": "move since the open",
+   "bucket": "down",
+   "train_n": 31,
+   "train_pf": 0.98,
+   "train_pnl": -105,
+   "test_n": 12,
+   "test_pf": 1.44,
+   "test_pnl": 1482,
+   "flag": ""
+  },
+  {
+   "feature": "signal volume",
+   "bucket": "3-5x",
+   "train_n": 22,
+   "train_pf": 0.56,
+   "train_pnl": -1927,
+   "test_n": 12,
+   "test_pf": 4.38,
+   "test_pnl": 6547,
+   "flag": ""
+  },
+  {
+   "feature": "signal volume",
+   "bucket": "5x+",
+   "train_n": 13,
+   "train_pf": 1.25,
+   "train_pnl": 563,
+   "test_n": 4,
+   "test_pf": 4.03,
+   "test_pnl": 1793,
+   "flag": ""
+  },
+  {
+   "feature": "signal volume",
+   "bucket": "<3x",
+   "train_n": 72,
+   "train_pf": 1.19,
+   "train_pnl": 3073,
+   "test_n": 31,
+   "test_pf": 0.64,
+   "test_pnl": -3327,
+   "flag": ""
+  },
+  {
+   "feature": "weekday",
+   "bucket": "Fri",
+   "train_n": 25,
+   "train_pf": 0.76,
+   "train_pnl": -1650,
+   "test_n": 7,
+   "test_pf": 0.26,
+   "test_pnl": -2360,
+   "flag": ""
+  },
+  {
+   "feature": "weekday",
+   "bucket": "Mon",
+   "train_n": 18,
+   "train_pf": 1.9,
+   "train_pnl": 2450,
+   "test_n": 13,
+   "test_pf": 2.01,
+   "test_pnl": 2689,
+   "flag": ""
+  },
+  {
+   "feature": "weekday",
+   "bucket": "Thu",
+   "train_n": 18,
+   "train_pf": 1.93,
+   "train_pnl": 3075,
+   "test_n": 7,
+   "test_pf": 2.12,
+   "test_pnl": 2280,
+   "flag": ""
+  },
+  {
+   "feature": "weekday",
+   "bucket": "Tue",
+   "train_n": 20,
+   "train_pf": 0.63,
+   "train_pnl": -1339,
+   "test_n": 9,
+   "test_pf": 1.31,
+   "test_pnl": 505,
+   "flag": ""
+  },
+  {
+   "feature": "weekday",
+   "bucket": "Wed",
+   "train_n": 26,
+   "train_pf": 0.87,
+   "train_pnl": -827,
+   "test_n": 11,
+   "test_pf": 1.8,
+   "test_pnl": 1899,
+   "flag": ""
+  }
+ ],
  "tuned": {
   "params": {
    "stop_pct": 0.024,
