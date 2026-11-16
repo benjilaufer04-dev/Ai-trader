@@ -1,0 +1,38 @@
+name: Export market data (research, read-only)
+
+# Manual only. Downloads bars and uploads them as a workflow artifact (kept 7 days, never committed)
+# so strategy research can run offline. No orders, no account access.
+on:
+  workflow_dispatch:
+    inputs:
+      minute_days:
+        description: "Trading days of 1-minute bars"
+        default: "120"
+      since:
+        description: "Daily bars since"
+        default: "2016-01-01"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Export
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python dump_data.py --minute-days ${{ inputs.minute_days || '120' }} --since ${{ inputs.since || '2016-01-01' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: market-data
+          path: data/
+          retention-days: 7
