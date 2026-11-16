@@ -47,6 +47,9 @@ def main():
     end = datetime.now(timezone.utc) - timedelta(minutes=16)
     d = fetch(DAILY_SYMBOLS.split(","), TimeFrame.Day, datetime.fromisoformat(a.since).replace(tzinfo=timezone.utc), end)
     d.to_csv("data/daily.csv.gz", index=False)
+    if a.minute_days <= 0:
+        print(f"daily rows {len(d)} (minute bars skipped)")
+        return
     m = fetch(MINUTE_SYMBOLS.split(","), TimeFrame.Minute, end - timedelta(days=int(a.minute_days * 1.5) + 4), end)
     if len(m):
         ny = pd.to_datetime(m["timestamp"]).dt.tz_convert("America/New_York")
