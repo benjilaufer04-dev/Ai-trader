@@ -1,0 +1,352 @@
+{
+ "benchmarks": {
+  "SPY": {
+   "train": {
+    "cagr_%": 20.7,
+    "total_%": 90.9,
+    "max_dd_%": -24.5,
+    "sharpe": 0.98,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2018": 0.0,
+     "2020": 43.6,
+     "2021": 28.7,
+     "2022": -18.2,
+     "2023": 26.2
+    }
+   },
+   "test": {
+    "cagr_%": 18.0,
+    "total_%": 60.8,
+    "max_dd_%": -18.7,
+    "sharpe": 1.16,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2024": 24.9,
+     "2025": 17.7,
+     "2026": 9.4
+    }
+   }
+  },
+  "QQQ": {
+   "train": {
+    "cagr_%": 14.9,
+    "total_%": 61.2,
+    "max_dd_%": -35.0,
+    "sharpe": 0.7,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2020": 21.1,
+     "2021": 27.1,
+     "2022": -32.4,
+     "2023": 54.8
+    }
+   },
+   "test": {
+    "cagr_%": 18.8,
+    "total_%": 64.0,
+    "max_dd_%": -22.7,
+    "sharpe": 0.92,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2024": 25.6,
+     "2025": 20.8,
+     "2026": 8.1
+    }
+   }
+  }
+ },
+ "strategies": [
+  {
+   "strategy": "buy&hold",
+   "params": {
+    "sym": "SPY"
+   },
+   "train": {
+    "cagr_%": 20.7,
+    "total_%": 90.9,
+    "max_dd_%": -24.5,
+    "sharpe": 0.98,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2018": 0.0,
+     "2020": 43.6,
+     "2021": 28.7,
+     "2022": -18.2,
+     "2023": 26.2
+    }
+   },
+   "test": {
+    "cagr_%": 18.0,
+    "total_%": 60.8,
+    "max_dd_%": -18.7,
+    "sharpe": 1.16,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2024": 24.9,
+     "2025": 17.7,
+     "2026": 9.4
+    }
+   },
+   "robust_test_sharpe": 0.8400000000000001,
+   "own_buyhold_test_sharpe": -9,
+   "rules_ok": true,
+   "trades": 1,
+   "luck_p": 0.35,
+   "placebo_median_sharpe": 0.88,
+   "passed": false
+  },
+  {
+   "strategy": "trend (above N-day avg)",
+   "params": {
+    "sym": "TQQQ",
+    "sma": 200
+   },
+   "train": {
+    "cagr_%": 27.8,
+    "total_%": 132.0,
+    "max_dd_%": -36.4,
+    "sharpe": 0.91,
+    "exposure_%": 44.0,
+    "by_year_%": {
+     "2020": 0.0,
+     "2021": 73.4,
+     "2022": -19.8,
+     "2023": 66.9
+    }
+   },
+   "test": {
+    "cagr_%": 16.5,
+    "total_%": 54.8,
+    "max_dd_%": -38.2,
+    "sharpe": 0.56,
+    "exposure_%": 87.0,
+    "by_year_%": {
+     "2024": 36.9,
+     "2025": 18.7,
+     "2026": -4.7
+    }
+   },
+   "robust_test_sharpe": 0.785,
+   "own_buyhold_test_sharpe": 0.74,
+   "rules_ok": false,
+   "trades": 14,
+   "luck_p": 0.45,
+   "placebo_median_sharpe": 0.55,
+   "passed": false
+  },
+  {
+   "strategy": "leveraged fund, trend of its index",
+   "params": {
+    "pair": [
+     "TQQQ",
+     "QQQ"
+    ],
+    "sma": 200
+   },
+   "train": {
+    "cagr_%": 23.5,
+    "total_%": 106.0,
+    "max_dd_%": -54.0,
+    "sharpe": 0.76,
+    "exposure_%": 48.0,
+    "by_year_%": {
+     "2020": 0.0,
+     "2021": 73.4,
+     "2022": -43.9,
+     "2023": 111.8
+    }
+   },
+   "test": {
+    "cagr_%": 18.8,
+    "total_%": 63.9,
+    "max_dd_%": -44.7,
+    "sharpe": 0.59,
+    "exposure_%": 92.0,
+    "by_year_%": {
+     "2024": 58.3,
+     "2025": 26.1,
+     "2026": -17.9
+    }
+   },
+   "robust_test_sharpe": 0.615,
+   "own_buyhold_test_sharpe": 0.74,
+   "rules_ok": false,
+   "trades": 12,
+   "luck_p": 0.2,
+   "placebo_median_sharpe": 0.42,
+   "passed": false
+  },
+  {
+   "strategy": "RSI(2) pullback",
+   "params": {
+    "sym": "TQQQ",
+    "entry": 5,
+    "exit_sma": 5,
+    "trend": 200
+   },
+   "train": {
+    "cagr_%": 13.1,
+    "total_%": 52.4,
+    "max_dd_%": -6.1,
+    "sharpe": 1.4,
+    "exposure_%": 4.0,
+    "by_year_%": {
+     "2020": 0.0,
+     "2021": 28.1,
+     "2022": 4.7,
+     "2023": 13.7
+    }
+   },
+   "test": {
+    "cagr_%": 9.5,
+    "total_%": 29.7,
+    "max_dd_%": -17.5,
+    "sharpe": 0.57,
+    "exposure_%": 10.0,
+    "by_year_%": {
+     "2024": 6.5,
+     "2025": -0.7,
+     "2026": 22.7
+    }
+   },
+   "robust_test_sharpe": 0.9299999999999999,
+   "own_buyhold_test_sharpe": 0.74,
+   "rules_ok": false,
+   "trades": 26,
+   "luck_p": 0.15,
+   "placebo_median_sharpe": 0.14,
+   "passed": false
+  },
+  {
+   "strategy": "IBS close-near-low",
+   "params": {
+    "sym": "SOXL",
+    "thr": 0.3,
+    "trend": 0
+   },
+   "train": {
+    "cagr_%": 97.8,
+    "total_%": 935.8,
+    "max_dd_%": -49.8,
+    "sharpe": 1.44,
+    "exposure_%": 54.0,
+    "by_year_%": {
+     "2020": 78.5,
+     "2021": 84.0,
+     "2022": 35.6,
+     "2023": 132.5
+    }
+   },
+   "test": {
+    "cagr_%": 108.2,
+    "total_%": 717.2,
+    "max_dd_%": -47.8,
+    "sharpe": 1.37,
+    "exposure_%": 45.0,
+    "by_year_%": {
+     "2024": -12.7,
+     "2025": 102.3,
+     "2026": 362.8
+    }
+   },
+   "robust_test_sharpe": 1.215,
+   "own_buyhold_test_sharpe": 0.77,
+   "rules_ok": false,
+   "trades": 344,
+   "luck_p": 0.0,
+   "placebo_median_sharpe": 0.14,
+   "passed": false
+  },
+  {
+   "strategy": "overnight hold",
+   "params": {
+    "sym": "TNA"
+   },
+   "train": {
+    "cagr_%": 15.3,
+    "total_%": 62.8,
+    "max_dd_%": -58.2,
+    "sharpe": 0.55,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2020": 80.1,
+     "2021": 51.6,
+     "2022": -31.0,
+     "2023": -13.5
+    }
+   },
+   "test": {
+    "cagr_%": -0.9,
+    "total_%": -2.5,
+    "max_dd_%": -56.0,
+    "sharpe": 0.19,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2024": 31.4,
+     "2025": -33.4,
+     "2026": 11.3
+    }
+   },
+   "robust_test_sharpe": 0.28500000000000003,
+   "own_buyhold_test_sharpe": 0.49,
+   "rules_ok": false,
+   "trades": 1586,
+   "luck_p": 0.5,
+   "placebo_median_sharpe": 0.19,
+   "passed": false
+  },
+  {
+   "strategy": "sector rotation",
+   "params": {
+    "universe": [
+     "XLE",
+     "XLF",
+     "XLK",
+     "XLV",
+     "XLY",
+     "XLP",
+     "XLI",
+     "XLU",
+     "SMH",
+     "GLD",
+     "TLT"
+    ],
+    "lookback": 252,
+    "top": 1
+   },
+   "train": {
+    "cagr_%": 13.4,
+    "total_%": 54.1,
+    "max_dd_%": -34.0,
+    "sharpe": 0.65,
+    "exposure_%": 68.0,
+    "by_year_%": {
+     "2020": 0.0,
+     "2021": 8.6,
+     "2022": 31.5,
+     "2023": 7.9
+    }
+   },
+   "test": {
+    "cagr_%": 44.7,
+    "total_%": 188.4,
+    "max_dd_%": -31.2,
+    "sharpe": 1.24,
+    "exposure_%": 100.0,
+    "by_year_%": {
+     "2024": 39.1,
+     "2025": 54.0,
+     "2026": 34.6
+    }
+   },
+   "robust_test_sharpe": 1.06,
+   "own_buyhold_test_sharpe": -9,
+   "rules_ok": true,
+   "trades": 8,
+   "luck_p": 0.15,
+   "placebo_median_sharpe": 0.67,
+   "passed": false
+  }
+ ]
+}
