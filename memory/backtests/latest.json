@@ -1,175 +1,6 @@
 {
  "current": {
   "params": {
-   "stop_pct": 0.024,
-   "target_pct": 0.048,
-   "vol_mult": 3.0,
-   "max_extension": 0.02,
-   "time_stop_min": 30,
-   "position_x": 0.33,
-   "momentum_exit": 1,
-   "entry_window_min": 120
-  },
-  "all": {
-   "trades": 76,
-   "pnl": 2182.0,
-   "win_rate": 0.276,
-   "profit_factor": 1.21,
-   "max_drawdown": -4501.0,
-   "avg_win": 593.0,
-   "avg_loss": -187.0,
-   "per_day": 36.0,
-   "green_days": "15/60",
-   "exits": {
-    "momentum": 46,
-    "eod": 13,
-    "time": 9,
-    "stop": 5,
-    "target": 3
-   }
-  },
-  "train": {
-   "trades": 55,
-   "pnl": -1474.0,
-   "win_rate": 0.2,
-   "profit_factor": 0.81,
-   "max_drawdown": -4501.0,
-   "avg_win": 573.0,
-   "avg_loss": -177.0,
-   "per_day": -37.0,
-   "green_days": "8/40",
-   "exits": {
-    "momentum": 35,
-    "eod": 9,
-    "time": 9,
-    "target": 1,
-    "stop": 1
-   }
-  },
-  "test": {
-   "trades": 21,
-   "pnl": 3655.0,
-   "win_rate": 0.476,
-   "profit_factor": 2.46,
-   "max_drawdown": -778.0,
-   "avg_win": 616.0,
-   "avg_loss": -228.0,
-   "per_day": 183.0,
-   "green_days": "7/20",
-   "exits": {
-    "momentum": 11,
-    "stop": 4,
-    "eod": 4,
-    "target": 2
-   }
-  },
-  "breakdown": {
-   "train": {
-    "by_symbol": {
-     "SOXL": {
-      "n": 10,
-      "pnl": 405.0,
-      "pf": 1.21
-     },
-     "SOXS": {
-      "n": 7,
-      "pnl": -760.0,
-      "pf": 0.43
-     },
-     "SQQQ": {
-      "n": 13,
-      "pnl": -726.0,
-      "pf": 0.52
-     },
-     "TQQQ": {
-      "n": 19,
-      "pnl": -759.0,
-      "pf": 0.68
-     },
-     "TSLA": {
-      "n": 6,
-      "pnl": 366.0,
-      "pf": 1.66
-     }
-    },
-    "by_entry_time": {
-     "000-029m": {
-      "n": 1,
-      "pnl": -176.0,
-      "pf": 0.0
-     },
-     "030-059m": {
-      "n": 18,
-      "pnl": -160.0,
-      "pf": 0.93
-     },
-     "060-089m": {
-      "n": 15,
-      "pnl": -650.0,
-      "pf": 0.75
-     },
-     "090-119m": {
-      "n": 21,
-      "pnl": -487.0,
-      "pf": 0.82
-     }
-    }
-   },
-   "test": {
-    "by_symbol": {
-     "SOXL": {
-      "n": 3,
-      "pnl": -651.0,
-      "pf": 0.0
-     },
-     "SOXS": {
-      "n": 4,
-      "pnl": 1511.0,
-      "pf": 3.34
-     },
-     "SQQQ": {
-      "n": 4,
-      "pnl": 3033.0,
-      "pf": 307.37
-     },
-     "TQQQ": {
-      "n": 7,
-      "pnl": 210.0,
-      "pf": 1.34
-     },
-     "TSLA": {
-      "n": 3,
-      "pnl": -448.0,
-      "pf": 0.22
-     }
-    },
-    "by_entry_time": {
-     "000-029m": {
-      "n": 1,
-      "pnl": -139.0,
-      "pf": 0.0
-     },
-     "030-059m": {
-      "n": 6,
-      "pnl": 2124.0,
-      "pf": 3.27
-     },
-     "060-089m": {
-      "n": 8,
-      "pnl": -259.0,
-      "pf": 0.76
-     },
-     "090-119m": {
-      "n": 6,
-      "pnl": 1929.0,
-      "pf": 6.43
-     }
-    }
-   }
-  }
- },
- "tuned": {
-  "params": {
    "stop_pct": 0.016,
    "target_pct": 0.048,
    "vol_mult": 2.0,
@@ -179,57 +10,232 @@
    "momentum_exit": 1,
    "entry_window_min": 120
   },
-  "train": {
-   "trades": 104,
-   "pnl": 2283.0,
-   "win_rate": 0.24,
-   "profit_factor": 1.11,
+  "all": {
+   "trades": 154,
+   "pnl": 6722.0,
+   "win_rate": 0.253,
+   "profit_factor": 1.19,
    "max_drawdown": -7946.0,
-   "avg_win": 941.0,
-   "avg_loss": -269.0,
-   "per_day": 57.0,
-   "green_days": "12/40",
+   "avg_win": 1063.0,
+   "avg_loss": -302.0,
+   "per_day": 112.0,
+   "green_days": "22/60",
    "exits": {
-    "momentum": 73,
-    "eod": 17,
-    "stop": 9,
+    "momentum": 99,
+    "stop": 25,
+    "eod": 21,
+    "target": 9
+   }
+  },
+  "train": {
+   "trades": 107,
+   "pnl": 1709.0,
+   "win_rate": 0.234,
+   "profit_factor": 1.07,
+   "max_drawdown": -7946.0,
+   "avg_win": 983.0,
+   "avg_loss": -279.0,
+   "per_day": 43.0,
+   "green_days": "13/40",
+   "exits": {
+    "momentum": 74,
+    "eod": 16,
+    "stop": 12,
     "target": 5
    }
   },
   "test": {
-   "trades": 49,
-   "pnl": 6409.0,
-   "win_rate": 0.347,
-   "profit_factor": 1.5,
+   "trades": 47,
+   "pnl": 5014.0,
+   "win_rate": 0.298,
+   "profit_factor": 1.42,
    "max_drawdown": -2647.0,
-   "avg_win": 1127.0,
-   "avg_loss": -399.0,
-   "per_day": 320.0,
-   "green_days": "11/20",
+   "avg_win": 1207.0,
+   "avg_loss": -360.0,
+   "per_day": 251.0,
+   "green_days": "9/20",
    "exits": {
-    "momentum": 24,
-    "stop": 15,
-    "eod": 6,
+    "momentum": 25,
+    "stop": 13,
+    "eod": 5,
     "target": 4
    }
   },
-  "all": {
-   "trades": 153,
-   "pnl": 8692.0,
-   "win_rate": 0.275,
-   "profit_factor": 1.26,
-   "max_drawdown": -7946.0,
-   "avg_win": 1017.0,
-   "avg_loss": -306.0,
-   "per_day": 145.0,
-   "green_days": "23/60",
-   "exits": {
-    "momentum": 97,
-    "stop": 24,
-    "eod": 23,
-    "target": 9
+  "breakdown": {
+   "train": {
+    "by_symbol": {
+     "SOXL": {
+      "n": 23,
+      "pnl": 4012.0,
+      "pf": 1.73
+     },
+     "SOXS": {
+      "n": 16,
+      "pnl": 858.0,
+      "pf": 1.19
+     },
+     "SQQQ": {
+      "n": 25,
+      "pnl": -1222.0,
+      "pf": 0.78
+     },
+     "TQQQ": {
+      "n": 33,
+      "pnl": -1241.0,
+      "pf": 0.79
+     },
+     "TSLA": {
+      "n": 10,
+      "pnl": -699.0,
+      "pf": 0.45
+     }
+    },
+    "by_entry_time": {
+     "000-029m": {
+      "n": 5,
+      "pnl": -834.0,
+      "pf": 0.62
+     },
+     "030-059m": {
+      "n": 43,
+      "pnl": -2461.0,
+      "pf": 0.73
+     },
+     "060-089m": {
+      "n": 30,
+      "pnl": -255.0,
+      "pf": 0.96
+     },
+     "090-119m": {
+      "n": 28,
+      "pnl": 5655.0,
+      "pf": 2.25
+     },
+     "120-149m": {
+      "n": 1,
+      "pnl": -397.0,
+      "pf": 0.0
+     }
+    }
+   },
+   "test": {
+    "by_symbol": {
+     "SOXL": {
+      "n": 9,
+      "pnl": 1415.0,
+      "pf": 1.66
+     },
+     "SOXS": {
+      "n": 7,
+      "pnl": 2532.0,
+      "pf": 2.13
+     },
+     "SQQQ": {
+      "n": 9,
+      "pnl": 4304.0,
+      "pf": 4.02
+     },
+     "TQQQ": {
+      "n": 14,
+      "pnl": -475.0,
+      "pf": 0.86
+     },
+     "TSLA": {
+      "n": 8,
+      "pnl": -2762.0,
+      "pf": 0.0
+     }
+    },
+    "by_entry_time": {
+     "000-029m": {
+      "n": 4,
+      "pnl": -1615.0,
+      "pf": 0.0
+     },
+     "030-059m": {
+      "n": 16,
+      "pnl": 3159.0,
+      "pf": 1.74
+     },
+     "060-089m": {
+      "n": 17,
+      "pnl": 849.0,
+      "pf": 1.2
+     },
+     "090-119m": {
+      "n": 10,
+      "pnl": 2621.0,
+      "pf": 2.48
+     }
+    }
    }
   }
  },
- "adopted": true
+ "tuned": {
+  "params": {
+   "stop_pct": 0.024,
+   "target_pct": 0.048,
+   "vol_mult": 3.0,
+   "max_extension": 0.04,
+   "time_stop_min": 30,
+   "position_x": 0.33,
+   "momentum_exit": 1,
+   "entry_window_min": 999
+  },
+  "train": {
+   "trades": 173,
+   "pnl": 2682.0,
+   "win_rate": 0.341,
+   "profit_factor": 1.13,
+   "max_drawdown": -5722.0,
+   "avg_win": 399.0,
+   "avg_loss": -183.0,
+   "per_day": 67.0,
+   "green_days": "14/40",
+   "exits": {
+    "momentum": 77,
+    "time": 44,
+    "eod": 40,
+    "stop": 7,
+    "target": 5
+   }
+  },
+  "test": {
+   "trades": 79,
+   "pnl": -2038.0,
+   "win_rate": 0.291,
+   "profit_factor": 0.84,
+   "max_drawdown": -4802.0,
+   "avg_win": 473.0,
+   "avg_loss": -231.0,
+   "per_day": -102.0,
+   "green_days": "10/20",
+   "exits": {
+    "momentum": 38,
+    "time": 16,
+    "eod": 14,
+    "stop": 8,
+    "target": 3
+   }
+  },
+  "all": {
+   "trades": 252,
+   "pnl": 643.0,
+   "win_rate": 0.325,
+   "profit_factor": 1.02,
+   "max_drawdown": -5722.0,
+   "avg_win": 420.0,
+   "avg_loss": -199.0,
+   "per_day": 11.0,
+   "green_days": "24/60",
+   "exits": {
+    "momentum": 115,
+    "time": 60,
+    "eod": 54,
+    "stop": 15,
+    "target": 8
+   }
+  }
+ },
+ "adopted": false
 }
