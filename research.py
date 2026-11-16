@@ -90,6 +90,36 @@ def s_ibs(px, sym, thr=0.2, trend=0):
     return hold_returns(px, sym, pos)
 
 
+def s_ibs_open(px, sym, thr=0.2):
+    """Same IBS signal, but the pessimistic way: buy at the NEXT open (not the signal close), sell at
+    that day's close. If the edge only exists when buying exactly at the close, this shows it."""
+    o, c, h, l = (px[f][sym].dropna() for f in ("open", "close", "high", "low"))
+    ibs = (c - l) / (h - l).replace(0, np.nan)
+    sig = (ibs < thr).shift(1).fillna(False)
+    r = ((c / o - 1 - 2 * COST) * sig).fillna(0)
+    return r, int(sig.sum())
+
+
+def deep_dive(px, split, thr=0.2):
+    """IBS on every fund: is the pattern broad (real) or only in one lucky fund?"""
+    lines = [f"## Deep dive: IBS (close in the bottom {int(thr * 100)}% of the day's range -> hold one day), every fund",
+             "| fund | TRAIN Sharpe | TEST Sharpe | TEST CAGR | TEST DD | hold-the-fund TEST Sharpe | next-open version TEST Sharpe |",
+             "|---|---|---|---|---|---|---|"]
+    for sym in sorted(px["close"].columns):
+        try:
+            r, _ = s_ibs(px, sym, thr)
+            ro, _ = s_ibs_open(px, sym, thr)
+            bh, _ = s_buyhold(px, sym)
+        except Exception:
+            continue
+        a, b = metrics(r[r.index < split]), metrics(r[r.index >= split])
+        if "sharpe" not in a or "sharpe" not in b:
+            continue
+        lines.append(f"| {sym} | {a['sharpe']} | {b['sharpe']} | {b['cagr_%']}% | {b['max_dd_%']}% | "
+                     f"{metrics(bh.loc[split:]).get('sharpe')} | {metrics(ro.loc[split:]).get('sharpe')} |")
+    return lines + [""]
+
+
 def s_overnight(px, sym):
     """Buy at the close, sell at the next open (the 'overnight' effect)."""
     o, c = px["open"][sym].dropna(), px["close"][sym].dropna()
@@ -240,6 +270,7 @@ def main():
             bench[b] = {"train": metrics(r[r.index < split]), "test": metrics(r[r.index >= split])}
     lines += ["## Benchmarks (just hold)"] + [f"- {b} TRAIN {v['train']}\n- {b} TEST  {v['test']}" for b, v in bench.items()] + [""]
     real = evaluate(px, split, lines)
+    lines += deep_dive(px, split)
     placebo = {k: [] for k in real}
     for i in range(a.placebos):
         for k, v in evaluate(shuffled(px, i), split).items():

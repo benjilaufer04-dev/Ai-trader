@@ -81,11 +81,30 @@ def prep_day(df, cfg):
               + df["timestamp"].dt.tz_convert("America/New_York").dt.minute - 570)  # minutes since 9:30
     return {"o": o.values, "h": df["high"].values, "l": df["low"].values, "c": c.values,
             "score": score.fillna(0).values, "dead": dead.values, "minute": minute.values,
-            "ts": df["timestamp"].values}
+            "ts": df["timestamp"].values, "ext": ext.fillna(0).values, "vwap": ind["vwap"].values,
+            "daymove": (c / o.iloc[0] - 1).values}
 
 
-def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
-    """Event-driven over all symbols, minute by minute. Returns list of trades."""
+def market_state(q, m, inverse_fund):
+    """Was the trade WITH the whole market (QQQ) at minute m? 'with' / 'against' / 'mixed'."""
+    if q is None:
+        return "n/a"
+    i = np.searchsorted(q["minute"], m)
+    if i >= len(q["minute"]) or q["minute"][i] != m:
+        return "n/a"
+    up = q["c"][i] > q["vwap"][i] and q["c"][i] > q["o"][0]
+    down = q["c"][i] < q["vwap"][i] and q["c"][i] < q["o"][0]
+    if not (up or down):
+        return "mixed"
+    return "with" if up != bool(inverse_fund) else "against"
+
+
+INVERSE_FUNDS = {"SQQQ", "SOXS", "SPXU", "TZA"}
+
+
+def simulate(bars, days, cfg, equity=100_000, slip=0.0003, ctx=None):
+    """Event-driven over all symbols, minute by minute. Returns list of trades.
+    ctx: optional QQQ bars, only used to label each trade (with/against the market) for learning."""
     trades = []
     session_len = 390
     for day in days:
@@ -96,6 +115,10 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                 prepped[s] = prep_day(d.drop(columns="day"), cfg)
         if not prepped:
             continue
+        q = None
+        if ctx is not None:
+            dq = ctx[ctx["day"] == day]
+            q = prep_day(dq.drop(columns="day"), cfg) if len(dq) > 30 else None
         # align by minute-of-session
         open_pos, cooldown = {}, {}
         for m in range(session_len):
@@ -130,7 +153,8 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     exit_px *= (1 - slip)
                     trades.append({"day": str(day), "symbol": s, "entry": t["entry"], "exit": exit_px,
                                    "usd": t["usd"], "pnl": (exit_px / t["entry"] - 1) * t["usd"],
-                                   "why": why, "minutes": m - t["m"], "entry_min": t["m"]})
+                                   "why": why, "minutes": m - t["m"], "entry_min": t["m"],
+                                   **t.get("ctx", {})})
                     del open_pos[s]
                     cooldown[s] = m + cfg["cooldown_min"]
             # 2) entries: signal on the bar that closed at minute m-1 -> buy this bar's open
@@ -155,16 +179,19 @@ def simulate(bars, days, cfg, equity=100_000, slip=0.0003):
                     j = np.searchsorted(p2["minute"], m)
                     if j >= len(p2["minute"]) or p2["minute"][j] != m:
                         continue
-                    cands.append((p["score"][idx], s2, p2["o"][j]))
+                    cands.append((p["score"][idx], s2, p2["o"][j], {}))
                     continue
-                cands.append((p["score"][idx], s, p["o"][idx + 1]))
-            for score, s, px in sorted(cands, reverse=True):
+                feat = {"vol_x": float(p["score"][idx]), "ext": float(p["ext"][idx]),
+                        "daymove": float(p["daymove"][idx]), "market": market_state(q, m - 1, s in INVERSE_FUNDS),
+                        "weekday": pd.Timestamp(day).day_name()[:3]}
+                cands.append((p["score"][idx], s, p["o"][idx + 1], feat))
+            for score, s, px, feat in sorted(cands, key=lambda x: x[0], reverse=True):
                 if len(open_pos) >= cfg["max_positions"]:
                     break
                 entry = px * (1 + slip)
                 open_pos[s] = {"entry": entry, "stop": entry * (1 - cfg["stop_pct"]),
                                "target": entry * (1 + cfg["target_pct"]), "best": entry, "m": m,
-                               "usd": equity * cfg["position_x"]}
+                               "usd": equity * cfg["position_x"], "ctx": feat}
     return trades
 
 
@@ -206,6 +233,101 @@ def breakdown(trades):
                            "pf": round(float(w / l), 2) if l > 0 else 99}
         return out
     return {"by_symbol": agg("symbol"), "by_entry_time": agg("bucket")}
+
+
+FEATURES = {
+    "signal volume": ("vol_x", [(0, 3, "<3x"), (3, 5, "3-5x"), (5, 1e9, "5x+")]),
+    "distance above VWAP": ("ext", [(-1, 0.005, "<0.5%"), (0.005, 0.01, "0.5-1%"), (0.01, 1, "1-2%")]),
+    "move since the open": ("daymove", [(-1, 0, "down"), (0, 0.02, "0-2%"), (0.02, 0.05, "2-5%"), (0.05, 9, "5%+")]),
+    "entry time": ("entry_min", [(0, 30, "first 30m"), (30, 60, "30-60m"), (60, 120, "60-120m"), (120, 999, "later")]),
+}
+
+
+def label(trade, feature):
+    key, buckets = FEATURES[feature]
+    v = trade.get(key)
+    if v is None:
+        return None
+    for lo, hi, name in buckets:
+        if lo <= v < hi:
+            return name
+    return None
+
+
+def patterns(train_trades, test_trades, min_n=8):
+    """The learning step: for every trade condition (market direction, signal strength, time...),
+    compare results on TRAIN and TEST. A pattern counts only if it shows up on BOTH halves with
+    enough trades: 'AVOID' if it lost on both (PF < 0.8), 'FAVOR' if it won on both (PF > 1.5)."""
+    def table(trades):
+        out = {}
+        for t in trades:
+            labs = {f: label(t, f) for f in FEATURES}
+            labs["market (QQQ)"] = t.get("market")
+            labs["weekday"] = t.get("weekday")
+            for f, b in labs.items():
+                if b is None or b == "n/a":
+                    continue
+                d = out.setdefault((f, b), {"n": 0, "win": 0.0, "loss": 0.0})
+                d["n"] += 1
+                d["win" if t["pnl"] > 0 else "loss"] += abs(t["pnl"])
+        return out
+    tr, te = table(train_trades), table(test_trades)
+
+    def overall(trades):
+        w = sum(t["pnl"] for t in trades if t["pnl"] > 0)
+        l = -sum(t["pnl"] for t in trades if t["pnl"] <= 0)
+        return w / l if l > 0 else 99
+    o_tr, o_te = overall(train_trades), overall(test_trades)
+    rows = []
+    for k in sorted(set(tr) | set(te)):
+        a, b = tr.get(k, {"n": 0, "win": 0, "loss": 0}), te.get(k, {"n": 0, "win": 0, "loss": 0})
+        pf = lambda d: round(d["win"] / d["loss"], 2) if d["loss"] > 0 else 99
+        flag = ""
+        # weekday "effects" are almost always noise -> shown, never flagged
+        if a["n"] >= min_n and b["n"] >= min_n and k[0] != "weekday":
+            if pf(a) < min(0.8, o_tr) and pf(b) < min(0.8, o_te):
+                flag = "AVOID"
+            elif pf(a) > max(1.5, 1.25 * o_tr) and pf(b) > max(1.5, 1.25 * o_te):
+                flag = "FAVOR"
+        rows.append({"feature": k[0], "bucket": k[1], "train_n": a["n"], "train_pf": pf(a),
+                     "train_pnl": round(a["win"] - a["loss"]), "test_n": b["n"], "test_pf": pf(b),
+                     "test_pnl": round(b["win"] - b["loss"]), "flag": flag})
+    return rows
+
+
+def live_trades_with_context(bars, ctx, path=None):
+    """Re-create the entry conditions of every LIVE trade from the same bars the backtest uses,
+    so live and backtest trades are judged by the same yardstick."""
+    path = path or os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_trades.jsonl")
+    if not os.path.exists(path):
+        return []
+    rows = [json.loads(l) for l in open(path) if l.strip()]
+    buys = {}
+    out = []
+    for r in rows:
+        if r.get("side") == "buy":
+            buys[r["symbol"]] = r
+        elif r.get("side") == "sell" and r["symbol"] in buys:
+            b = buys.pop(r["symbol"])
+            t = {"day": r["ts"][:10], "symbol": r["symbol"], "pnl": r.get("pnl", 0), "why": r.get("reason", "")}
+            ts = pd.Timestamp(b["ts"]).tz_convert("America/New_York")
+            x = bars.get(r["symbol"])
+            if x is not None:
+                d = x[x["day"] == ts.date()]
+                if len(d) > 30:
+                    p = prep_day(d.drop(columns="day"), sc.CFG)
+                    m = ts.hour * 60 + ts.minute - 570 - 1      # signal bar = the minute before entry
+                    i = np.searchsorted(p["minute"], m)
+                    if i < len(p["minute"]):
+                        q = None
+                        if ctx is not None:
+                            dq = ctx[ctx["day"] == ts.date()]
+                            q = prep_day(dq.drop(columns="day"), sc.CFG) if len(dq) > 30 else None
+                        t.update({"entry_min": m + 1, "vol_x": b.get("signal_volume_x"), "ext": float(p["ext"][i]),
+                                  "daymove": float(p["daymove"][i]), "weekday": ts.day_name()[:3],
+                                  "market": market_state(q, m, r["symbol"] in INVERSE_FUNDS)})
+            out.append(t)
+    return out
 
 
 def current_cfg():
@@ -259,7 +381,10 @@ def main():
     a = ap.parse_args()
 
     base = current_cfg()
-    bars, days = load_bars(base["symbols"], a.days)
+    bars, days = load_bars(list(dict.fromkeys(base["symbols"] + ["QQQ"])), a.days)
+    ctx = bars["QQQ"] if "QQQ" in bars else None
+    if "QQQ" not in base["symbols"]:
+        bars.pop("QQQ", None)
     split = int(len(days) * 2 / 3)
     train, test = days[:split], days[split:]
     lines = [f"# Scalper backtest {datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC",
@@ -272,14 +397,43 @@ def main():
     lines += ["## Current settings", json.dumps(cur), "",
               f"- ALL : {res['current']['all']}", f"- TRAIN: {res['current']['train']}",
               f"- TEST : {res['current']['test']}", ""]
-    bd_train = breakdown(simulate(bars, train, base))
-    bd_test = breakdown(simulate(bars, test, base))
+    tr_trades, te_trades = simulate(bars, train, base, ctx=ctx), simulate(bars, test, base, ctx=ctx)
+    bd_train, bd_test = breakdown(tr_trades), breakdown(te_trades)
     res["current"]["breakdown"] = {"train": bd_train, "test": bd_test}
     lines += ["## Current settings: where the P/L comes from (look for losers on BOTH train and test)"]
     for part in ("by_symbol", "by_entry_time"):
         lines.append(f"- {part} TRAIN: {bd_train[part]}")
         lines.append(f"- {part} TEST : {bd_test[part]}")
     lines.append("")
+
+    # ---- learning: which conditions keep winning / losing on BOTH halves, and the live trades ----
+    pats = patterns(tr_trades, te_trades)
+    res["patterns"] = pats
+    lines += ["## Lessons: conditions that win or lose on BOTH train and test (min 8 trades each)",
+              "FAVOR = PF > 1.5 and clearly above the strategy's overall PF on both halves; AVOID = PF < 0.8 on both. "
+              "Only these are candidates for a rule change (then tested as a filter on train AND test).", ""]
+    for r in pats:
+        if r["flag"]:
+            lines.append(f"- **{r['flag']}** {r['feature']} = {r['bucket']}: TRAIN {r['train_n']} tr PF {r['train_pf']} "
+                         f"(${r['train_pnl']:+,}) | TEST {r['test_n']} tr PF {r['test_pf']} (${r['test_pnl']:+,})")
+    if not any(r["flag"] for r in pats):
+        lines.append("- none yet")
+    lines += ["", "<details><summary>All conditions</summary>", ""]
+    lines += [f"- {r['feature']} = {r['bucket']}: TRAIN {r['train_n']} PF {r['train_pf']} | TEST {r['test_n']} PF {r['test_pf']}"
+              for r in pats]
+    lines += ["", "</details>", ""]
+    live = live_trades_with_context(bars, ctx)
+    flagged = {(r["feature"], r["bucket"]): r["flag"] for r in pats if r["flag"]}
+    if live:
+        lines.append("## Live trades, judged by the same conditions")
+        for t in live:
+            labs = {f: label(t, f) for f in FEATURES}
+            labs["market (QQQ)"] = t.get("market")
+            notes = [f"{flagged[(f, b)]}:{f}={b}" for f, b in labs.items() if (f, b) in flagged]
+            lines.append(f"- {t['day']} {t['symbol']} ${t['pnl']:+,.0f} ({t['why'][:30]}) | market {t.get('market')}, "
+                         f"vol x{t.get('vol_x')}, {labs['entry time']}, day move {labs['move since the open']}"
+                         + (f" | {', '.join(notes)}" if notes else ""))
+        lines.append("")
 
     if a.inverse:
         lines.append("## 'Do the opposite' test (signal on X -> buy the inverse fund; TSLA/NVDA skipped)")
