@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
-MINUTE_SYMBOLS = "TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA,QQQ,SPY,IWM,AAPL,AMD,META,AMZN,MSFT,TNA,TZA,UPRO,SPXU"
+MINUTE_SYMBOLS = "SMH,TQQQ,SQQQ,SOXL,SOXS,TSLA,NVDA,QQQ,SPY,IWM,AAPL,AMD,META,AMZN,MSFT,TNA,TZA,UPRO,SPXU"
 DAILY_SYMBOLS = ("SPY,QQQ,IWM,DIA,TQQQ,SQQQ,SOXL,SOXS,UPRO,TNA,TLT,GLD,SLV,USO,XLE,XLF,XLK,XLV,XLY,XLP,"
                  "XLI,XLU,SMH,ARKK,EEM,EFA,HYG,UUP,TSLA,NVDA,AAPL,MSFT,AMZN,META,GOOGL,AMD,NFLX,COIN,MSTR,PLTR")
 
@@ -42,6 +42,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--minute-days", type=int, default=120)
     ap.add_argument("--since", default="2016-01-01")
+    ap.add_argument("--minute-symbols", default=MINUTE_SYMBOLS)
     a = ap.parse_args()
     os.makedirs("data", exist_ok=True)
     end = datetime.now(timezone.utc) - timedelta(minutes=16)
@@ -50,7 +51,7 @@ def main():
     if a.minute_days <= 0:
         print(f"daily rows {len(d)} (minute bars skipped)")
         return
-    m = fetch(MINUTE_SYMBOLS.split(","), TimeFrame.Minute, end - timedelta(days=int(a.minute_days * 1.5) + 4), end)
+    m = fetch(a.minute_symbols.split(","), TimeFrame.Minute, end - timedelta(days=int(a.minute_days * 1.5) + 4), end)
     if len(m):
         ny = pd.to_datetime(m["timestamp"]).dt.tz_convert("America/New_York")
         m = m[(ny.dt.time >= pd.Timestamp("09:30").time()) & (ny.dt.time < pd.Timestamp("16:00").time())]

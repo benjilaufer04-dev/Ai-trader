@@ -82,3 +82,13 @@ def test_research_lab_runs_and_placebo_destroys_order():
     a = np.sort((px["close"]["SPY"].pct_change().dropna()).round(10).values)
     b = np.sort((sh["close"]["SPY"].pct_change().dropna()).round(10).values)
     assert np.allclose(a[:50], b[:50]) and not np.allclose(px["close"]["SPY"].values[1:], sh["close"]["SPY"].values)
+
+
+def test_near_close_check_runs(tmp_path):
+    bars, days = fake_minute_bars(["SMH"], days=30)
+    df = bars["SMH"].drop(columns="day").reset_index()
+    df["symbol"] = "SMH"
+    path = tmp_path / "m.csv.gz"
+    df.to_csv(path, index=False)
+    lines, res = rs.near_close_check(str(path), symbols=("SMH",), thr=0.5)
+    assert "SMH" in res and res["SMH"]["days"] == 30 and res["SMH"]["trades"] > 0

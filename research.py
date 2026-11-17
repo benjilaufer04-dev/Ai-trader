@@ -120,6 +120,52 @@ def deep_dive(px, split, thr=0.2):
     return lines + [""]
 
 
+def near_close_check(minute_path, symbols=("SMH", "SOXL", "TQQQ", "QQQ"), thr=0.2, cut="15:55"):
+    """Can we really trade IBS? The daily test buys AT the close, using the close to decide - not possible
+    in practice. Here the bot decides with what it can see at 15:55 (today's high/low/price so far),
+    buys at the 15:56 bar's open, and sells at the 15:56 open of the next day (or keeps holding if the
+    signal fires again). Compared with the ideal close-to-close version on the same days."""
+    m = pd.read_csv(minute_path)
+    m["ts"] = pd.to_datetime(m["timestamp"], utc=True).dt.tz_convert("America/New_York")
+    m["day"], m["hm"] = m["ts"].dt.date, m["ts"].dt.strftime("%H:%M")
+    lines = [f"## Near-close check (IBS < {thr}, decide at {cut} with the minute bars, trade the next minute), "
+             f"{m['day'].min()}..{m['day'].max()}",
+             "| fund | days | trades | real-world total | ideal close-to-close total | real win rate | real avg/trade |",
+             "|---|---|---|---|---|---|---|"]
+    res = {}
+    for sym in symbols:
+        x = m[m["symbol"] == sym]
+        if x.empty:
+            continue
+        rows = []
+        for day, d in x.groupby("day"):
+            seen = d[d["hm"] <= cut]
+            nxt = d[d["hm"] > cut]
+            if len(seen) < 300 or nxt.empty:
+                continue
+            h, l, p = seen["high"].max(), seen["low"].min(), seen["close"].iloc[-1]
+            full_h, full_l, close = d["high"].max(), d["low"].min(), d["close"].iloc[-1]
+            rows.append({"day": day, "ibs_live": (p - l) / (h - l) if h > l else 0.5, "fill": nxt["open"].iloc[0],
+                         "ibs_ideal": (close - full_l) / (full_h - full_l) if full_h > full_l else 0.5, "close": close})
+        df = pd.DataFrame(rows)
+        if len(df) < 20:
+            continue
+        real, ideal = [], []
+        for i in range(len(df) - 1):
+            if df["ibs_live"].iloc[i] < thr:
+                real.append(df["fill"].iloc[i + 1] / df["fill"].iloc[i] - 1 - 2 * COST)
+            if df["ibs_ideal"].iloc[i] < thr:
+                ideal.append(df["close"].iloc[i + 1] / df["close"].iloc[i] - 1 - 2 * COST)
+        tot = lambda r: round((float(np.prod([1 + v for v in r])) - 1) * 100, 1) if r else 0.0
+        res[sym] = {"days": len(df), "trades": len(real), "real_total_%": tot(real), "ideal_total_%": tot(ideal),
+                    "real_win_rate": round(float(np.mean([v > 0 for v in real])), 2) if real else 0,
+                    "real_avg_%": round(float(np.mean(real)) * 100, 2) if real else 0}
+        r = res[sym]
+        lines.append(f"| {sym} | {r['days']} | {r['trades']} | {r['real_total_%']}% | {r['ideal_total_%']}% | "
+                     f"{r['real_win_rate']} | {r['real_avg_%']}% |")
+    return lines + [""], res
+
+
 def s_overnight(px, sym):
     """Buy at the close, sell at the next open (the 'overnight' effect)."""
     o, c = px["open"][sym].dropna(), px["close"][sym].dropna()
@@ -254,6 +300,7 @@ def main():
     ap.add_argument("--data", default="data/daily.csv.gz")
     ap.add_argument("--split", default="2024-01-01", help="first TEST day; everything before is TRAIN")
     ap.add_argument("--placebos", type=int, default=20)
+    ap.add_argument("--minute", default="data/minute.csv.gz", help="minute bars for the near-close check")
     a = ap.parse_args()
     px = load(a.data)
     split = pd.Timestamp(a.split)
@@ -271,6 +318,10 @@ def main():
     lines += ["## Benchmarks (just hold)"] + [f"- {b} TRAIN {v['train']}\n- {b} TEST  {v['test']}" for b, v in bench.items()] + [""]
     real = evaluate(px, split, lines)
     lines += deep_dive(px, split)
+    near = {}
+    if a.minute and os.path.exists(a.minute):
+        nl, near = near_close_check(a.minute)
+        lines += nl
     placebo = {k: [] for k in real}
     for i in range(a.placebos):
         for k, v in evaluate(shuffled(px, i), split).items():
@@ -293,7 +344,7 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M")
     open(os.path.join(OUT_DIR, f"daily_{stamp}.md"), "w").write("\n".join(lines) + "\n")
-    json.dump({"benchmarks": bench, "strategies": summary}, open(os.path.join(OUT_DIR, "daily_latest.json"), "w"),
+    json.dump({"benchmarks": bench, "strategies": summary, "near_close": near}, open(os.path.join(OUT_DIR, "daily_latest.json"), "w"),
               indent=1, default=str)
     print("\n".join(lines))
 

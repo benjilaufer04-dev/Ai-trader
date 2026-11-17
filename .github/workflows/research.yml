@@ -34,7 +34,7 @@ jobs:
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-        run: python dump_data.py --minute-days 0 --since 2016-01-01
+        run: python dump_data.py --minute-days 250 --since 2016-01-01 --minute-symbols SMH,SOXL,TQQQ,QQQ
       - name: Strategy lab
         run: python research.py --data data/daily.csv.gz --split ${{ inputs.split || '2024-01-01' }} --placebos ${{ inputs.placebos || '20' }}
       - name: Save results
