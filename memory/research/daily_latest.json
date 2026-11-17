@@ -92,8 +92,8 @@
    "own_buyhold_test_sharpe": -9,
    "rules_ok": true,
    "trades": 1,
-   "luck_p": 0.35,
-   "placebo_median_sharpe": 0.88,
+   "luck_p": 0.2,
+   "placebo_median_sharpe": 0.86,
    "passed": false
   },
   {
@@ -131,8 +131,8 @@
    "own_buyhold_test_sharpe": 0.74,
    "rules_ok": false,
    "trades": 14,
-   "luck_p": 0.45,
-   "placebo_median_sharpe": 0.55,
+   "luck_p": 0.4,
+   "placebo_median_sharpe": 0.48,
    "passed": false
   },
   {
@@ -174,7 +174,7 @@
    "rules_ok": false,
    "trades": 12,
    "luck_p": 0.2,
-   "placebo_median_sharpe": 0.42,
+   "placebo_median_sharpe": 0.39,
    "passed": false
   },
   {
@@ -214,8 +214,8 @@
    "own_buyhold_test_sharpe": 0.74,
    "rules_ok": false,
    "trades": 26,
-   "luck_p": 0.15,
-   "placebo_median_sharpe": 0.14,
+   "luck_p": 0.4,
+   "placebo_median_sharpe": 0.09,
    "passed": false
   },
   {
@@ -292,8 +292,8 @@
    "own_buyhold_test_sharpe": 0.49,
    "rules_ok": false,
    "trades": 1586,
-   "luck_p": 0.5,
-   "placebo_median_sharpe": 0.19,
+   "luck_p": 0.6,
+   "placebo_median_sharpe": 0.42,
    "passed": false
   },
   {
@@ -344,9 +344,43 @@
    "own_buyhold_test_sharpe": -9,
    "rules_ok": true,
    "trades": 8,
-   "luck_p": 0.15,
-   "placebo_median_sharpe": 0.67,
+   "luck_p": 0.2,
+   "placebo_median_sharpe": 0.6,
    "passed": false
   }
- ]
+ ],
+ "near_close": {
+  "SMH": {
+   "days": 257,
+   "trades": 52,
+   "real_total_%": 42.3,
+   "ideal_total_%": 74.0,
+   "real_win_rate": 0.67,
+   "real_avg_%": 0.72
+  },
+  "SOXL": {
+   "days": 258,
+   "trades": 49,
+   "real_total_%": 322.7,
+   "ideal_total_%": 392.2,
+   "real_win_rate": 0.69,
+   "real_avg_%": 3.35
+  },
+  "TQQQ": {
+   "days": 258,
+   "trades": 44,
+   "real_total_%": 57.2,
+   "ideal_total_%": 30.6,
+   "real_win_rate": 0.57,
+   "real_avg_%": 1.1
+  },
+  "QQQ": {
+   "days": 259,
+   "trades": 44,
+   "real_total_%": 14.7,
+   "ideal_total_%": 9.7,
+   "real_win_rate": 0.55,
+   "real_avg_%": 0.32
+  }
+ }
 }
