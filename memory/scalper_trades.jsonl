@@ -21,3 +21,7 @@
 {"ts": "2026-11-11T19:00:19+00:00", "symbol": "TQQQ", "side": "sell", "qty": 536, "entry": 60.49, "exit": 61.548004, "pnl": 567.09, "reason": "run time limit - handing over flat"}
 {"ts": "2026-11-16T16:23:01+00:00", "symbol": "TQQQ", "side": "buy", "qty": 902, "entry": 54.868094, "signal_volume_x": 6.58}
 {"ts": "2026-11-16T16:49:18+00:00", "symbol": "TQQQ", "side": "sell", "qty": 902, "entry": 54.868094, "exit": 54.47, "pnl": -359.08, "reason": "momentum faded (EMA9<EMA21, below VWAP)"}
+{"ts": "2026-11-17T15:30:12+00:00", "symbol": "SQQQ", "side": "buy", "qty": 1057, "entry": 46.639934, "signal_volume_x": 2.29}
+{"ts": "2026-11-17T15:52:50+00:00", "symbol": "SQQQ", "side": "sell", "qty": 1057, "entry": 46.639934, "exit": 48.89, "pnl": 2378.32, "reason": "target 48.88"}
+{"ts": "2026-11-17T16:10:02+00:00", "symbol": "SOXL", "side": "buy", "qty": 1052, "entry": 47.905019, "signal_volume_x": 2.83}
+{"ts": "2026-11-17T16:17:13+00:00", "symbol": "SOXL", "side": "sell", "qty": 1052, "entry": 47.905019, "exit": 47.1, "pnl": -846.88, "reason": "stop order 47.14"}
