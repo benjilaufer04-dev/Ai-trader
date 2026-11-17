@@ -13,3 +13,9 @@ Rules for improving:
 - Log every change and why in memory/changelog.md.
 
 Only when all 4 are true for 2 weeks in a row: tell Ben it's reasonable to *consider* small real money.
+
+## Bots in the account (read this, daily reviewer)
+- Scalper (scalper.py): intraday, flat before the close. Log: memory/scalper_trades.jsonl. Live stats since 2026-11-09.
+- Swing bot (swing.py, swing.yml), since 2026-11-17, Ben chose "same account, small size": IBS on SMH - at ~15:55 ET buy when SMH is in the bottom 20% of its day range, sell after the bounce. 10% of the account, no leverage, -6% GTC stop at the broker, max 5 days. HOLDS OVERNIGHT by design (the scalper leaves SMH alone). Log: memory/swing_trades.jsonl, state memory/swing_state.json. Judge it with the same 4 criteria, separately (it trades ~1x/week, so criterion 2 takes longer - count weeks, not 60 trades).
+- Learning: nightly backtest report has "Lessons" (FAVOR/AVOID conditions on BOTH halves) and "Live trades, judged by the same conditions". Strategy lab: memory/research/daily_*.md (research.yml, Fridays). Check swing.yml runs too.
+- Ben's long-term wish: grow a small real account (e.g. $100). Only after the criteria hold; be honest that big multiples take years.
