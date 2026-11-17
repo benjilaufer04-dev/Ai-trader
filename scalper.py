@@ -85,6 +85,8 @@ if os.getenv("USE_TUNED_PARAMS", "true").lower() == "true" and os.path.exists(PA
     except Exception:
         pass
 TRADES = os.path.join(os.getenv("MEMORY_DIR", "memory"), "scalper_trades.jsonl")
+# Held overnight by the swing bot (swing.py) in the same account: the scalper never touches these.
+SWING_SYMBOLS = {s.strip().upper() for s in os.getenv("SWING_SYMBOLS", "SMH").split(",") if s.strip()}
 
 
 # ---------- pure logic (tested in test_scalper.py) ----------
@@ -336,9 +338,13 @@ class Scalper:
             log.info("EXIT  %-5s (leftover position) [%s]", sym, reason)
 
     def adopt_positions(self):
-        """On start: keep tracking our own symbols, close anything else (leftovers from other bots)."""
+        """On start: keep tracking our own symbols, close anything else (leftovers from other bots),
+        except the swing bot's positions, which are meant to be held overnight."""
         for p in self.t.get_all_positions():
             sym, entry = p.symbol, float(p.avg_entry_price)
+            if sym in SWING_SYMBOLS and sym not in CFG["symbols"]:
+                log.info("LEAVE %s %s (swing bot position)", sym, p.qty)
+                continue
             if sym in CFG["symbols"] and float(p.qty) > 0:
                 self.cancel_orders(sym)
                 self.open_trade(sym, entry, int(float(p.qty)), datetime.now(timezone.utc))

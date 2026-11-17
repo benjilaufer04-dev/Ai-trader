@@ -1,0 +1,67 @@
+name: Swing bot (IBS on SMH, small, holds overnight, paper)
+
+# Decides once a day ~5 min before the close: buy SMH when it closes near its daily low,
+# sell after the bounce. 10% of the account, no leverage, -6% stop order at the broker.
+# Two schedules cover winter/summer time; the one that is >75 min from the close exits at once.
+on:
+  schedule:
+    - cron: "25 19 * * 1-5"
+    - cron: "25 20 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (log the decision, no orders)"
+        type: boolean
+        default: true
+      now:
+        description: "Decide right away instead of waiting for 5 min before the close"
+        type: boolean
+        default: false
+
+concurrency:
+  group: swing
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  swing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Use the newest code and state
+        run: git pull -q origin main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Swing
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          PAPER: "true"
+          SWING_SYMBOLS: "SMH"
+          SWING_IBS: "0.2"        # buy when the price is in the bottom 20% of today's range
+          SWING_PCT: "0.10"       # 10% of the account, no leverage
+          SWING_STOP_PCT: "0.06"  # -6% protective stop at the broker, overnight too
+          SWING_MAX_DAYS: "5"
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="--dry-run"; fi
+          if [ "${{ inputs.now }}" = "true" ]; then ARGS="$ARGS --now"; fi
+          python swing.py $ARGS
+      - name: Save the trade log and state
+        if: always()
+        run: |
+          git config user.name "ai-trader-bot"
+          git config user.email "ai-trader-bot@users.noreply.github.com"
+          git add memory/swing_trades.jsonl memory/swing_state.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "memory: swing trades"
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i*5)); done
+          exit 1
