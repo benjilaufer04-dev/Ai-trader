@@ -92,3 +92,50 @@ def test_near_close_check_runs(tmp_path):
     df.to_csv(path, index=False)
     lines, res = rs.near_close_check(str(path), symbols=("SMH",), thr=0.5)
     assert "SMH" in res and res["SMH"]["days"] == 30 and res["SMH"]["trades"] > 0
+
+
+def _day(o, h, l, c, post_open, post_low=None):
+    """One day: a single 'pre' bar summarising the day up to 15:55, then one post bar."""
+    pl = post_open if post_low is None else post_low
+    return {"pre": [(o, h, l, c)], "post": [(post_open, post_open, pl, post_open)]}
+
+
+def test_sim_swing_matches_live_rules():
+    # day 0 closes weak -> buy at 100; day 1 bounces (IBS high) -> sell at 104
+    days = [_day(110, 110, 99, 100, 100), _day(101, 105, 100, 104.5, 104)]
+    t, why = rs.sim_swing(days, 0.2, 0.06)
+    assert why == ["bounce"] and abs(t[0] - (0.04 - 2 * rs.COST)) < 1e-9
+
+
+def test_sim_swing_stop_then_rebuy_same_day():
+    # buy at 100 (stop 94); next day crashes to 88 (stop fills at 94), closes weak -> buys again at 88.5
+    days = [_day(110, 110, 99, 100, 100), _day(99, 99, 88, 88.4, 88.5), _day(89, 93, 88.5, 92.9, 93)]
+    t, why = rs.sim_swing(days, 0.2, 0.06)
+    assert why == ["stop", "bounce"]
+    assert abs(t[0] - (-0.06 - 2 * rs.COST)) < 1e-9 and t[1] > 0.04
+    # same days without a stop: one trade held through the drop, sold on the bounce
+    t2, why2 = rs.sim_swing(days, 0.2, 0)
+    assert why2 == ["bounce"]
+    assert len(t2) == 1 and t2[0] < 0
+
+
+def test_sim_swing_gap_below_stop_fills_at_open_and_max_days():
+    days = [_day(110, 110, 99, 100, 100), _day(90, 91, 89, 89.5, 89.5)]
+    t, why = rs.sim_swing(days, 0.2, 0.06)
+    assert why == ["stop"] and abs(t[0] - (-0.10 - 2 * rs.COST)) < 1e-9   # gapped to 90, not 94
+    weak = [_day(110, 110, 99, 100, 100)] + [_day(100, 100, 99, 99.1, 99.1) for _ in range(6)]
+    t, why = rs.sim_swing(weak, 0.2, 0)
+    assert why[0] == "max days"
+
+
+def test_swing_rules_check_runs(tmp_path):
+    bars, _ = fake_minute_bars(["SMH"], days=30)
+    rows = []
+    for s, df in bars.items():
+        d = df.drop(columns="day").reset_index()
+        d["symbol"] = s
+        rows.append(d)
+    p = tmp_path / "m.csv"
+    pd.concat(rows).to_csv(p, index=False)
+    lines, res = rs.swing_rules_check(str(p), thr=0.5)
+    assert any("stop" in l for l in lines) and "SMH stop 0.06" in res

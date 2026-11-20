@@ -166,6 +166,92 @@ def near_close_check(minute_path, symbols=("SMH", "SOXL", "TQQQ", "QQQ"), thr=0.
     return lines + [""], res
 
 
+def sim_swing(days, thr=0.2, stop_pct=0.06, max_days=5):
+    """Replay the LIVE swing.py rules day by day on minute bars, including the broker stop.
+    days: list of {"pre": [(open, high, low, close), ...] bars up to the decision minute,
+                   "post": [...] bars after it (first one's open = our fill)}.
+    stop_pct None/0 = no stop. A stop sells at the stop price, or at the bar's open if it gapped below.
+    After a stop-out the bot may buy again at that day's decision (as swing.py does).
+    Returns a list of trade returns (after costs) and the exit reasons."""
+    trades, reasons = [], []
+    hold, entry, stop, held = False, 0.0, 0.0, 0
+
+    def stopped(bars):
+        for o, h, l, c in bars:
+            if l <= stop:
+                return min(o, stop)
+        return None
+
+    for d in days:
+        pre, post = d["pre"], d["post"]
+        if not pre or not post:
+            continue
+        if hold and stop_pct:
+            px = stopped(pre)
+            if px is not None:
+                trades.append(px / entry - 1 - 2 * COST)
+                reasons.append("stop")
+                hold = False
+        h, l, p = max(b[1] for b in pre), min(b[2] for b in pre), pre[-1][3]
+        v = (p - l) / (h - l) if h > l else 0.5
+        fill = post[0][0]
+        if hold:
+            held += 1
+            if not (v < thr and held < max_days):
+                trades.append(fill / entry - 1 - 2 * COST)
+                reasons.append("max days" if v < thr else "bounce")
+                hold = False
+                continue                       # swing.py sells; it does not re-buy the same minute
+        elif v < thr:
+            hold, entry, held = True, fill, 0
+            stop = entry * (1 - stop_pct) if stop_pct else 0.0
+        if hold and stop_pct:
+            px = stopped(post)
+            if px is not None:
+                trades.append(px / entry - 1 - 2 * COST)
+                reasons.append("stop")
+                hold = False
+    return trades, reasons
+
+
+def swing_rules_check(minute_path, symbols=("SMH",), thr=0.2, cut="15:55", stops=(None, 0.04, 0.06, 0.08, 0.10)):
+    """The live swing bot's exact rules (IBS buy at 15:55, hold while weak, max 5 days, broker stop),
+    with different stop distances. Shows what the -6% stop costs or saves."""
+    m = pd.read_csv(minute_path)
+    m["ts"] = pd.to_datetime(m["timestamp"], utc=True).dt.tz_convert("America/New_York")
+    m["day"], m["hm"] = m["ts"].dt.date, m["ts"].dt.strftime("%H:%M")
+    lines = [f"## Swing bot rules with the broker stop (IBS < {thr} at {cut}, hold while weak, max 5 days), "
+             f"{m['day'].min()}..{m['day'].max()}",
+             "| fund | stop | trades | total | win rate | avg/trade | worst trade | max drawdown | stop-outs |",
+             "|---|---|---|---|---|---|---|---|---|"]
+    res = {}
+    for sym in symbols:
+        x = m[(m["symbol"] == sym) & (m["hm"] >= "09:30") & (m["hm"] < "16:00")]
+        days = []
+        for _, d in x.groupby("day"):
+            if len(d) < 300:
+                continue
+            bars = list(zip(d["open"], d["high"], d["low"], d["close"]))
+            k = int((d["hm"] <= cut).sum())
+            days.append({"pre": bars[:k], "post": bars[k:]})
+        if len(days) < 20:
+            continue
+        for s in stops:
+            t, why = sim_swing(days, thr, s or 0)
+            eq = np.cumprod([1 + v for v in t]) if t else np.array([1.0])
+            dd = float((eq / np.maximum.accumulate(np.r_[1.0, eq])[1:] - 1).min()) if t else 0.0
+            r = {"trades": len(t), "total_%": round((float(eq[-1]) - 1) * 100, 1),
+                 "win_rate": round(float(np.mean([v > 0 for v in t])), 2) if t else 0,
+                 "avg_%": round(float(np.mean(t)) * 100, 2) if t else 0,
+                 "worst_%": round(float(min(t)) * 100, 1) if t else 0,
+                 "max_dd_%": round(dd * 100, 1), "stops": why.count("stop")}
+            res[f"{sym} stop {s or 'none'}"] = r
+            lines.append(f"| {sym} | {'none' if not s else f'-{int(s * 100)}%'} | {r['trades']} | {r['total_%']}% | "
+                         f"{r['win_rate']} | {r['avg_%']}% | {r['worst_%']}% | {r['max_dd_%']}% | {r['stops']} |")
+    lines.append("(Per-trade returns on the position; the bot puts 10% of the account in, so account impact is ~1/10.)")
+    return lines + [""], res
+
+
 def s_overnight(px, sym):
     """Buy at the close, sell at the next open (the 'overnight' effect)."""
     o, c = px["open"][sym].dropna(), px["close"][sym].dropna()
@@ -322,6 +408,8 @@ def main():
     if a.minute and os.path.exists(a.minute):
         nl, near = near_close_check(a.minute)
         lines += nl
+        sl, near["swing_rules"] = swing_rules_check(a.minute)
+        lines += sl
     placebo = {k: [] for k in real}
     for i in range(a.placebos):
         for k, v in evaluate(shuffled(px, i), split).items():
