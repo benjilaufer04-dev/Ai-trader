@@ -1,1 +1,49 @@
-{}
+{
+ "orb": {
+  "params": {
+   "max_positions": 2,
+   "risk_pct": 0.005,
+   "max_x": 2.0,
+   "last_entry_min": 180,
+   "setup": "orb",
+   "or_min": 5,
+   "orb_stop": "mid",
+   "rr": 3.0,
+   "vol_mult": 1.5,
+   "filter": 1,
+   "breakeven_r": 1.0
+  },
+  "train": {
+   "trades": 61,
+   "pnl": 484.0,
+   "win_rate": 0.344,
+   "profit_factor": 1.04,
+   "max_drawdown": -4530.0,
+   "avg_win": 625.0,
+   "avg_loss": -316.0,
+   "per_day": 12.0,
+   "green_days": "13/40",
+   "exits": {
+    "stop": 31,
+    "eod": 27,
+    "target": 3
+   }
+  },
+  "test": {
+   "trades": 26,
+   "pnl": 7581.0,
+   "win_rate": 0.538,
+   "profit_factor": 3.17,
+   "max_drawdown": -1081.0,
+   "avg_win": 791.0,
+   "avg_loss": -291.0,
+   "per_day": 379.0,
+   "green_days": "10/20",
+   "exits": {
+    "eod": 13,
+    "stop": 8,
+    "target": 5
+   }
+  }
+ }
+}
