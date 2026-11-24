@@ -12,67 +12,67 @@
   },
   "all": {
    "trades": 146,
-   "pnl": 10524.0,
+   "pnl": 9914.0,
    "win_rate": 0.267,
-   "profit_factor": 1.32,
+   "profit_factor": 1.29,
    "max_drawdown": -7946.0,
    "avg_win": 1122.0,
-   "avg_loss": -311.0,
-   "per_day": 175.0,
+   "avg_loss": -316.0,
+   "per_day": 165.0,
    "green_days": "23/60",
    "exits": {
-    "momentum": 89,
-    "stop": 27,
+    "momentum": 88,
+    "stop": 28,
     "eod": 20,
     "target": 10
    }
   },
   "train": {
-   "trades": 106,
-   "pnl": 7134.0,
-   "win_rate": 0.264,
-   "profit_factor": 1.32,
+   "trades": 107,
+   "pnl": 8088.0,
+   "win_rate": 0.28,
+   "profit_factor": 1.35,
    "max_drawdown": -7946.0,
-   "avg_win": 1050.0,
-   "avg_loss": -285.0,
-   "per_day": 178.0,
-   "green_days": "15/40",
+   "avg_win": 1031.0,
+   "avg_loss": -297.0,
+   "per_day": 202.0,
+   "green_days": "16/40",
    "exits": {
     "momentum": 69,
-    "eod": 17,
+    "eod": 18,
     "stop": 14,
     "target": 6
    }
   },
   "test": {
-   "trades": 40,
-   "pnl": 3390.0,
-   "win_rate": 0.275,
-   "profit_factor": 1.31,
-   "max_drawdown": -2647.0,
-   "avg_win": 1307.0,
-   "avg_loss": -379.0,
-   "per_day": 169.0,
-   "green_days": "8/20",
+   "trades": 39,
+   "pnl": 1826.0,
+   "win_rate": 0.231,
+   "profit_factor": 1.17,
+   "max_drawdown": -2324.0,
+   "avg_win": 1427.0,
+   "avg_loss": -367.0,
+   "per_day": 91.0,
+   "green_days": "7/20",
    "exits": {
-    "momentum": 20,
-    "stop": 13,
+    "momentum": 19,
+    "stop": 14,
     "target": 4,
-    "eod": 3
+    "eod": 2
    }
   },
   "breakdown": {
    "train": {
     "by_symbol": {
      "SOXL": {
-      "n": 25,
-      "pnl": 6692.0,
-      "pf": 2.16
+      "n": 26,
+      "pnl": 7277.0,
+      "pf": 2.26
      },
      "SOXS": {
       "n": 17,
-      "pnl": 257.0,
-      "pf": 1.05
+      "pnl": -534.0,
+      "pf": 0.91
      },
      "SQQQ": {
       "n": 24,
@@ -81,8 +81,8 @@
      },
      "TQQQ": {
       "n": 31,
-      "pnl": 25.0,
-      "pf": 1.0
+      "pnl": 1185.0,
+      "pf": 1.23
      },
      "TSLA": {
       "n": 9,
@@ -98,42 +98,42 @@
      },
      "030-059m": {
       "n": 42,
-      "pnl": 3287.0,
-      "pf": 1.42
+      "pnl": 2496.0,
+      "pf": 1.29
      },
      "060-089m": {
       "n": 30,
-      "pnl": 2163.0,
-      "pf": 1.33
+      "pnl": 3323.0,
+      "pf": 1.53
      },
      "090-119m": {
-      "n": 26,
-      "pnl": 4118.0,
-      "pf": 1.98
+      "n": 27,
+      "pnl": 4703.0,
+      "pf": 2.12
      }
     }
    },
    "test": {
     "by_symbol": {
      "SOXL": {
-      "n": 8,
-      "pnl": -2369.0,
-      "pf": 0.2
+      "n": 7,
+      "pnl": -2954.0,
+      "pf": 0.0
      },
      "SOXS": {
       "n": 6,
-      "pnl": 3107.0,
-      "pf": 2.87
+      "pnl": 3098.0,
+      "pf": 2.85
      },
      "SQQQ": {
-      "n": 9,
-      "pnl": 5347.0,
-      "pf": 4.76
+      "n": 10,
+      "pnl": 5332.0,
+      "pf": 4.71
      },
      "TQQQ": {
-      "n": 10,
-      "pnl": -228.0,
-      "pf": 0.91
+      "n": 9,
+      "pnl": -1183.0,
+      "pf": 0.52
      },
      "TSLA": {
       "n": 7,
@@ -143,24 +143,24 @@
     },
     "by_entry_time": {
      "000-029m": {
-      "n": 1,
-      "pnl": -15.0,
+      "n": 2,
+      "pnl": -830.0,
       "pf": 0.0
      },
      "030-059m": {
       "n": 14,
-      "pnl": 1228.0,
-      "pf": 1.29
+      "pnl": 2018.0,
+      "pf": 1.58
      },
      "060-089m": {
-      "n": 16,
-      "pnl": 835.0,
-      "pf": 1.2
+      "n": 15,
+      "pnl": -119.0,
+      "pf": 0.97
      },
      "090-119m": {
-      "n": 9,
-      "pnl": 1341.0,
-      "pf": 1.55
+      "n": 8,
+      "pnl": 757.0,
+      "pf": 1.31
      }
     }
    }
@@ -171,30 +171,30 @@
    "feature": "distance above VWAP",
    "bucket": "0.5-1%",
    "train_n": 36,
-   "train_pf": 1.39,
-   "train_pnl": 2553,
+   "train_pf": 1.54,
+   "train_pnl": 3523,
    "test_n": 11,
-   "test_pf": 0.41,
-   "test_pnl": -1384,
+   "test_pf": 0.0,
+   "test_pnl": -2354,
    "flag": ""
   },
   {
    "feature": "distance above VWAP",
    "bucket": "1-2%",
-   "train_n": 30,
-   "train_pf": 1.73,
-   "train_pnl": 6657,
-   "test_n": 16,
-   "test_pf": 1.39,
-   "test_pnl": 2187,
+   "train_n": 32,
+   "train_pf": 1.65,
+   "train_pnl": 6436,
+   "test_n": 15,
+   "test_pf": 1.29,
+   "test_pnl": 1593,
    "flag": ""
   },
   {
    "feature": "distance above VWAP",
    "bucket": "<0.5%",
-   "train_n": 40,
-   "train_pf": 0.68,
-   "train_pnl": -2076,
+   "train_n": 39,
+   "train_pf": 0.7,
+   "train_pnl": -1871,
    "test_n": 13,
    "test_pf": 1.83,
    "test_pnl": 2587,
@@ -204,22 +204,22 @@
    "feature": "entry time",
    "bucket": "30-60m",
    "train_n": 42,
-   "train_pf": 1.42,
-   "train_pnl": 3287,
+   "train_pf": 1.29,
+   "train_pnl": 2496,
    "test_n": 14,
-   "test_pf": 1.29,
-   "test_pnl": 1228,
+   "test_pf": 1.58,
+   "test_pnl": 2018,
    "flag": ""
   },
   {
    "feature": "entry time",
    "bucket": "60-120m",
-   "train_n": 56,
-   "train_pf": 1.59,
-   "train_pnl": 6282,
-   "test_n": 25,
-   "test_pf": 1.32,
-   "test_pnl": 2177,
+   "train_n": 57,
+   "train_pf": 1.76,
+   "train_pnl": 8026,
+   "test_n": 23,
+   "test_pf": 1.09,
+   "test_pnl": 637,
    "flag": ""
   },
   {
@@ -228,9 +228,9 @@
    "train_n": 8,
    "train_pf": 0.36,
    "train_pnl": -2434,
-   "test_n": 1,
+   "test_n": 2,
    "test_pf": 0.0,
-   "test_pnl": -15,
+   "test_pnl": -830,
    "flag": ""
   },
   {
@@ -239,9 +239,9 @@
    "train_n": 9,
    "train_pf": 0.7,
    "train_pnl": -480,
-   "test_n": 2,
-   "test_pf": 2.93,
-   "test_pnl": 1570,
+   "test_n": 3,
+   "test_pf": 1.46,
+   "test_pnl": 755,
    "flag": ""
   },
   {
@@ -258,34 +258,34 @@
   {
    "feature": "market (QQQ)",
    "bucket": "with",
-   "train_n": 76,
-   "train_pf": 1.4,
-   "train_pnl": 6784,
-   "test_n": 24,
-   "test_pf": 1.85,
-   "test_pnl": 4655,
+   "train_n": 77,
+   "train_pf": 1.44,
+   "train_pnl": 7738,
+   "test_n": 22,
+   "test_pf": 1.84,
+   "test_pnl": 3906,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "0-2%",
-   "train_n": 59,
-   "train_pf": 1.35,
-   "train_pnl": 4186,
+   "train_n": 60,
+   "train_pf": 1.44,
+   "train_pnl": 5141,
    "test_n": 20,
-   "test_pf": 1.66,
-   "test_pnl": 2602,
+   "test_pf": 1.41,
+   "test_pnl": 1632,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "2-5%",
-   "train_n": 20,
-   "train_pf": 1.28,
-   "train_pnl": 1922,
-   "test_n": 5,
-   "test_pf": 0.58,
-   "test_pnl": -859,
+   "train_n": 21,
+   "train_pf": 1.37,
+   "train_pnl": 2507,
+   "test_n": 4,
+   "test_pf": 0.29,
+   "test_pnl": -1444,
    "flag": ""
   },
   {
@@ -294,31 +294,31 @@
    "train_n": 0,
    "train_pf": 99,
    "train_pnl": 0,
-   "test_n": 2,
-   "test_pf": 477.41,
-   "test_pnl": 2379,
+   "test_n": 3,
+   "test_pf": 2.91,
+   "test_pnl": 1565,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "down",
-   "train_n": 27,
-   "train_pf": 1.28,
-   "train_pnl": 1026,
-   "test_n": 13,
-   "test_pf": 0.85,
-   "test_pnl": -732,
+   "train_n": 26,
+   "train_pf": 1.1,
+   "train_pnl": 441,
+   "test_n": 12,
+   "test_pf": 1.02,
+   "test_pnl": 73,
    "flag": ""
   },
   {
    "feature": "signal volume",
    "bucket": "3-5x",
-   "train_n": 24,
-   "train_pf": 1.0,
-   "train_pnl": 11,
-   "test_n": 9,
-   "test_pf": 2.71,
-   "test_pnl": 4136,
+   "train_n": 26,
+   "train_pf": 1.03,
+   "train_pnl": 160,
+   "test_n": 8,
+   "test_pf": 2.31,
+   "test_pnl": 3173,
    "flag": ""
   },
   {
@@ -335,12 +335,12 @@
   {
    "feature": "signal volume",
    "bucket": "<3x",
-   "train_n": 68,
-   "train_pf": 1.27,
-   "train_pnl": 4176,
+   "train_n": 67,
+   "train_pf": 1.32,
+   "train_pnl": 4981,
    "test_n": 28,
-   "test_pf": 0.98,
-   "test_pnl": -155,
+   "test_pf": 0.91,
+   "test_pnl": -755,
    "flag": ""
   },
   {
@@ -357,9 +357,9 @@
   {
    "feature": "weekday",
    "bucket": "Mon",
-   "train_n": 18,
-   "train_pf": 2.7,
-   "train_pnl": 5097,
+   "train_n": 16,
+   "train_pf": 2.91,
+   "train_pnl": 5317,
    "test_n": 10,
    "test_pf": 1.14,
    "test_pnl": 290,
@@ -379,12 +379,12 @@
   {
    "feature": "weekday",
    "bucket": "Tue",
-   "train_n": 18,
-   "train_pf": 0.76,
-   "train_pnl": -724,
-   "test_n": 11,
-   "test_pf": 1.85,
-   "test_pnl": 2074,
+   "train_n": 21,
+   "train_pf": 1.0,
+   "train_pnl": 10,
+   "test_n": 10,
+   "test_pf": 1.21,
+   "test_pnl": 511,
    "flag": ""
   },
   {
@@ -401,66 +401,65 @@
  ],
  "tuned": {
   "params": {
-   "stop_pct": 0.016,
-   "target_pct": 0.048,
-   "vol_mult": 2.0,
+   "stop_pct": 0.008,
+   "target_pct": 0.016,
+   "vol_mult": 3.0,
    "max_extension": 0.04,
    "time_stop_min": 30,
-   "position_x": 0.5,
+   "position_x": 1.0,
    "momentum_exit": 0,
-   "entry_window_min": 999
+   "entry_window_min": 120
   },
   "train": {
-   "trades": 175,
-   "pnl": 10141.0,
-   "win_rate": 0.36,
-   "profit_factor": 1.24,
-   "max_drawdown": -9583.0,
-   "avg_win": 823.0,
-   "avg_loss": -372.0,
-   "per_day": 254.0,
-   "green_days": "20/40",
+   "trades": 68,
+   "pnl": 10845.0,
+   "win_rate": 0.426,
+   "profit_factor": 1.52,
+   "max_drawdown": -8170.0,
+   "avg_win": 1089.0,
+   "avg_loss": -531.0,
+   "per_day": 271.0,
+   "green_days": "15/40",
    "exits": {
-    "eod": 64,
-    "time": 52,
-    "stop": 49,
-    "target": 10
+    "stop": 37,
+    "target": 16,
+    "time": 11,
+    "eod": 4
    }
   },
   "test": {
-   "trades": 134,
-   "pnl": -7221.0,
-   "win_rate": 0.299,
-   "profit_factor": 0.83,
-   "max_drawdown": -12646.0,
-   "avg_win": 877.0,
-   "avg_loss": -450.0,
-   "per_day": -361.0,
-   "green_days": "9/20",
+   "trades": 18,
+   "pnl": 4446.0,
+   "win_rate": 0.444,
+   "profit_factor": 1.62,
+   "max_drawdown": -2629.0,
+   "avg_win": 1451.0,
+   "avg_loss": -716.0,
+   "per_day": 222.0,
+   "green_days": "6/20",
    "exits": {
-    "stop": 65,
-    "time": 37,
-    "eod": 24,
-    "target": 8
+    "stop": 10,
+    "target": 7,
+    "time": 1
    }
   },
   "all": {
-   "trades": 309,
-   "pnl": 2920.0,
-   "win_rate": 0.333,
-   "profit_factor": 1.03,
-   "max_drawdown": -12646.0,
-   "avg_win": 844.0,
-   "avg_loss": -408.0,
-   "per_day": 49.0,
-   "green_days": "29/60",
+   "trades": 86,
+   "pnl": 15291.0,
+   "win_rate": 0.43,
+   "profit_factor": 1.55,
+   "max_drawdown": -8170.0,
+   "avg_win": 1167.0,
+   "avg_loss": -569.0,
+   "per_day": 255.0,
+   "green_days": "21/60",
    "exits": {
-    "stop": 114,
-    "time": 89,
-    "eod": 88,
-    "target": 18
+    "stop": 47,
+    "target": 23,
+    "time": 12,
+    "eod": 4
    }
   }
  },
- "adopted": false
+ "adopted": true
 }

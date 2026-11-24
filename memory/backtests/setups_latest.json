@@ -14,33 +14,33 @@
    "breakeven_r": 1.0
   },
   "train": {
-   "trades": 61,
-   "pnl": 484.0,
-   "win_rate": 0.344,
-   "profit_factor": 1.04,
+   "trades": 60,
+   "pnl": 1454.0,
+   "win_rate": 0.367,
+   "profit_factor": 1.12,
    "max_drawdown": -4530.0,
-   "avg_win": 625.0,
-   "avg_loss": -316.0,
-   "per_day": 12.0,
-   "green_days": "13/40",
+   "avg_win": 617.0,
+   "avg_loss": -319.0,
+   "per_day": 36.0,
+   "green_days": "14/40",
    "exits": {
-    "stop": 31,
-    "eod": 27,
+    "stop": 29,
+    "eod": 28,
     "target": 3
    }
   },
   "test": {
-   "trades": 26,
-   "pnl": 7581.0,
-   "win_rate": 0.538,
-   "profit_factor": 3.17,
-   "max_drawdown": -1081.0,
-   "avg_win": 791.0,
+   "trades": 25,
+   "pnl": 7145.0,
+   "win_rate": 0.52,
+   "profit_factor": 3.05,
+   "max_drawdown": -1012.0,
+   "avg_win": 818.0,
    "avg_loss": -291.0,
-   "per_day": 379.0,
-   "green_days": "10/20",
+   "per_day": 357.0,
+   "green_days": "9/20",
    "exits": {
-    "eod": 13,
+    "eod": 12,
     "stop": 8,
     "target": 5
    }

@@ -1,47 +1,46 @@
 {
- "updated": "2026-11-12T22:23+00:00",
+ "updated": "2026-11-24T22:35+00:00",
  "params": {
-  "stop_pct": 0.016,
-  "target_pct": 0.048,
-  "vol_mult": 2.0,
-  "max_extension": 0.02,
-  "time_stop_min": 999,
-  "position_x": 0.5,
-  "momentum_exit": 1,
+  "stop_pct": 0.008,
+  "target_pct": 0.016,
+  "vol_mult": 3.0,
+  "max_extension": 0.04,
+  "time_stop_min": 30,
+  "position_x": 1.0,
+  "momentum_exit": 0,
   "entry_window_min": 120
  },
  "test": {
-  "trades": 49,
-  "pnl": 6409.0,
-  "win_rate": 0.347,
-  "profit_factor": 1.5,
-  "max_drawdown": -2647.0,
-  "avg_win": 1127.0,
-  "avg_loss": -399.0,
-  "per_day": 320.0,
-  "green_days": "11/20",
+  "trades": 18,
+  "pnl": 4446.0,
+  "win_rate": 0.444,
+  "profit_factor": 1.62,
+  "max_drawdown": -2629.0,
+  "avg_win": 1451.0,
+  "avg_loss": -716.0,
+  "per_day": 222.0,
+  "green_days": "6/20",
   "exits": {
-   "momentum": 24,
-   "stop": 15,
-   "eod": 6,
-   "target": 4
+   "stop": 10,
+   "target": 7,
+   "time": 1
   }
  },
  "train": {
-  "trades": 104,
-  "pnl": 2283.0,
-  "win_rate": 0.24,
-  "profit_factor": 1.11,
-  "max_drawdown": -7946.0,
-  "avg_win": 941.0,
-  "avg_loss": -269.0,
-  "per_day": 57.0,
-  "green_days": "12/40",
+  "trades": 68,
+  "pnl": 10845.0,
+  "win_rate": 0.426,
+  "profit_factor": 1.52,
+  "max_drawdown": -8170.0,
+  "avg_win": 1089.0,
+  "avg_loss": -531.0,
+  "per_day": 271.0,
+  "green_days": "15/40",
   "exits": {
-   "momentum": 73,
-   "eod": 17,
-   "stop": 9,
-   "target": 5
+   "stop": 37,
+   "target": 16,
+   "time": 11,
+   "eod": 4
   }
  }
 }
