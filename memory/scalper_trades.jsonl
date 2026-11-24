@@ -29,3 +29,7 @@
 {"ts": "2026-11-18T16:12:33+00:00", "symbol": "SOXL", "side": "sell", "qty": 1020, "entry": 49.061834, "exit": 48.27, "pnl": -807.67, "reason": "stop order 48.28"}
 {"ts": "2026-11-20T15:13:04+00:00", "symbol": "SOXS", "side": "buy", "qty": 696, "entry": 70.899885, "signal_volume_x": 2.76}
 {"ts": "2026-11-20T15:24:03+00:00", "symbol": "SOXS", "side": "sell", "qty": 696, "entry": 70.899885, "exit": 74.400517, "pnl": 2436.44, "reason": "target 74.30"}
+{"ts": "2026-11-24T14:56:15+00:00", "symbol": "SOXS", "side": "buy", "qty": 874, "entry": 58.874394, "signal_volume_x": 4.07}
+{"ts": "2026-11-24T15:00:04+00:00", "symbol": "SOXS", "side": "sell", "qty": 874, "entry": 58.874394, "exit": 57.91524, "pnl": -838.3, "reason": "stop order 57.93"}
+{"ts": "2026-11-24T15:08:07+00:00", "symbol": "SQQQ", "side": "buy", "qty": 1044, "entry": 48.64, "signal_volume_x": 2.1}
+{"ts": "2026-11-24T15:33:28+00:00", "symbol": "SQQQ", "side": "sell", "qty": 1044, "entry": 48.64, "exit": 48.615383, "pnl": -25.7, "reason": "stop order 48.64"}
