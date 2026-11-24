@@ -139,3 +139,16 @@ def test_swing_rules_check_runs(tmp_path):
     pd.concat(rows).to_csv(p, index=False)
     lines, res = rs.swing_rules_check(str(p), thr=0.5)
     assert any("stop" in l for l in lines) and "SMH stop 0.06" in res
+
+
+def test_adoption_frozen(tmp_path):
+    import json
+    import backtest
+    p = tmp_path / "params.json"
+    p.write_text(json.dumps({"params": {}, "freeze_until": "2026-12-01"}))
+    assert backtest.adoption_frozen(str(p), "2026-11-25") == "2026-12-01"
+    assert backtest.adoption_frozen(str(p), "2026-12-01") == "2026-12-01"
+    assert backtest.adoption_frozen(str(p), "2026-12-02") is None
+    p.write_text(json.dumps({"params": {}}))
+    assert backtest.adoption_frozen(str(p), "2026-11-25") is None
+    assert backtest.adoption_frozen(str(tmp_path / "missing.json"), "2026-11-25") is None

@@ -365,6 +365,18 @@ def should_adopt(train, test, cur_test, equity=100_000):
             and train["pnl"] > 0)
 
 
+def adoption_frozen(path=None, today=None):
+    """A reviewer can pause auto-adoption by putting "freeze_until": "YYYY-MM-DD" (and a
+    "freeze_reason") in scalper_params.json. Returns the date string while frozen, else None."""
+    path = path or PARAMS_FILE
+    today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        until = json.load(open(path)).get("freeze_until")
+    except Exception:
+        return None
+    return until if until and today <= until else None
+
+
 def score_fn(s):
     """Rank settings: needs enough trades; reward profit, punish drawdown."""
     if s["trades"] < 30:
@@ -467,8 +479,11 @@ def main():
                         "all": stats(simulate(bars, days, best[3]), days)}
         cur_test = res["current"]["test"]
         passed = should_adopt(best[1], best[2], cur_test)
-        res["adopted"] = bool(passed and a.adopt)
-        verdict = ("ADOPTED: new settings profitable on unseen days and better than current."
+        frozen = adoption_frozen()
+        res["adopted"] = bool(passed and a.adopt and not frozen)
+        verdict = (f"NOT adopted: auto-adoption paused by the reviewer until {frozen}"
+                   f" ({'would pass' if passed else 'would not pass'})." if frozen else
+                   "ADOPTED: new settings profitable on unseen days and better than current."
                    if res["adopted"] else
                    "NOT adopted: " + ("would pass (run with --adopt)." if passed else
                                       "best settings did not make money on the unseen TEST days / not better than current."))
