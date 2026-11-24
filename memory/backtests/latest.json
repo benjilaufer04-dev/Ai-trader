@@ -1,165 +1,171 @@
 {
  "current": {
   "params": {
-   "stop_pct": 0.008,
-   "target_pct": 0.016,
-   "vol_mult": 3.0,
-   "max_extension": 0.04,
-   "time_stop_min": 30,
-   "position_x": 1.0,
-   "momentum_exit": 0,
+   "stop_pct": 0.016,
+   "target_pct": 0.048,
+   "vol_mult": 2.0,
+   "max_extension": 0.02,
+   "time_stop_min": 999,
+   "position_x": 0.5,
+   "momentum_exit": 1,
    "entry_window_min": 120
   },
   "all": {
-   "trades": 156,
-   "pnl": 10186.0,
-   "win_rate": 0.391,
-   "profit_factor": 1.17,
-   "max_drawdown": -15007.0,
-   "avg_win": 1147.0,
-   "avg_loss": -630.0,
-   "per_day": 85.0,
-   "green_days": "34/120",
+   "trades": 265,
+   "pnl": 9918.0,
+   "win_rate": 0.268,
+   "profit_factor": 1.15,
+   "max_drawdown": -9598.0,
+   "avg_win": 1054.0,
+   "avg_loss": -335.0,
+   "per_day": 83.0,
+   "green_days": "42/120",
    "exits": {
-    "stop": 101,
-    "target": 36,
-    "time": 15,
-    "eod": 4
+    "momentum": 160,
+    "stop": 53,
+    "eod": 37,
+    "target": 15
    }
   },
   "train": {
-   "trades": 107,
-   "pnl": -7742.0,
-   "win_rate": 0.327,
-   "profit_factor": 0.82,
-   "max_drawdown": -13670.0,
-   "avg_win": 1036.0,
-   "avg_loss": -611.0,
-   "per_day": -97.0,
-   "green_days": "17/80",
+   "trades": 173,
+   "pnl": -1057.0,
+   "win_rate": 0.249,
+   "profit_factor": 0.98,
+   "max_drawdown": -7974.0,
+   "avg_win": 959.0,
+   "avg_loss": -325.0,
+   "per_day": -13.0,
+   "green_days": "24/80",
    "exits": {
-    "stop": 77,
-    "target": 17,
-    "time": 13
+    "momentum": 111,
+    "stop": 31,
+    "eod": 24,
+    "target": 7
    }
   },
   "test": {
-   "trades": 49,
-   "pnl": 17927.0,
-   "win_rate": 0.531,
-   "profit_factor": 2.13,
-   "max_drawdown": -2629.0,
-   "avg_win": 1297.0,
-   "avg_loss": -687.0,
-   "per_day": 448.0,
-   "green_days": "17/40",
+   "trades": 92,
+   "pnl": 10975.0,
+   "win_rate": 0.304,
+   "profit_factor": 1.48,
+   "max_drawdown": -3121.0,
+   "avg_win": 1201.0,
+   "avg_loss": -354.0,
+   "per_day": 274.0,
+   "green_days": "18/40",
    "exits": {
-    "stop": 24,
-    "target": 19,
-    "eod": 4,
-    "time": 2
+    "momentum": 49,
+    "stop": 22,
+    "eod": 13,
+    "target": 8
    }
   },
   "breakdown": {
    "train": {
     "by_symbol": {
      "SOXL": {
-      "n": 23,
-      "pnl": -3431.0,
-      "pf": 0.67
+      "n": 25,
+      "pnl": 1906.0,
+      "pf": 1.3
      },
      "SOXS": {
-      "n": 24,
-      "pnl": -4886.0,
-      "pf": 0.62
+      "n": 20,
+      "pnl": 5955.0,
+      "pf": 2.26
      },
      "SQQQ": {
-      "n": 28,
-      "pnl": -1617.0,
-      "pf": 0.85
+      "n": 46,
+      "pnl": -5056.0,
+      "pf": 0.62
      },
      "TQQQ": {
-      "n": 19,
-      "pnl": -2600.0,
-      "pf": 0.67
+      "n": 49,
+      "pnl": -5677.0,
+      "pf": 0.54
      },
      "TSLA": {
-      "n": 13,
-      "pnl": 4792.0,
-      "pf": 2.8
+      "n": 33,
+      "pnl": 1816.0,
+      "pf": 1.34
      }
     },
     "by_entry_time": {
      "000-029m": {
-      "n": 5,
-      "pnl": -350.0,
-      "pf": 0.86
+      "n": 12,
+      "pnl": 2381.0,
+      "pf": 1.9
      },
      "030-059m": {
-      "n": 33,
-      "pnl": 1573.0,
-      "pf": 1.15
+      "n": 61,
+      "pnl": 4006.0,
+      "pf": 1.32
      },
      "060-089m": {
-      "n": 36,
-      "pnl": -2557.0,
-      "pf": 0.85
+      "n": 54,
+      "pnl": -4871.0,
+      "pf": 0.7
      },
      "090-119m": {
-      "n": 33,
-      "pnl": -6408.0,
-      "pf": 0.54
+      "n": 44,
+      "pnl": -3195.0,
+      "pf": 0.7
+     },
+     "120-149m": {
+      "n": 2,
+      "pnl": 620.0,
+      "pf": 2.56
      }
     }
    },
    "test": {
     "by_symbol": {
      "SOXL": {
-      "n": 10,
-      "pnl": 3855.0,
-      "pf": 2.08
+      "n": 17,
+      "pnl": 3381.0,
+      "pf": 1.78
      },
      "SOXS": {
-      "n": 10,
-      "pnl": 3381.0,
-      "pf": 1.98
+      "n": 18,
+      "pnl": 2504.0,
+      "pf": 1.36
      },
      "SQQQ": {
-      "n": 11,
-      "pnl": 8436.0,
-      "pf": 4.24
+      "n": 22,
+      "pnl": 8142.0,
+      "pf": 3.25
      },
      "TQQQ": {
-      "n": 14,
-      "pnl": 2395.0,
-      "pf": 1.45
+      "n": 24,
+      "pnl": -236.0,
+      "pf": 0.95
      },
      "TSLA": {
-      "n": 4,
-      "pnl": -139.0,
-      "pf": 0.84
+      "n": 11,
+      "pnl": -2815.0,
+      "pf": 0.03
      }
     },
     "by_entry_time": {
      "000-029m": {
-      "n": 2,
-      "pnl": -1660.0,
-      "pf": 0.0
+      "n": 7,
+      "pnl": -1862.0,
+      "pf": 0.43
      },
      "030-059m": {
-      "n": 16,
-      "pnl": 5424.0,
-      "pf": 2.19
+      "n": 30,
+      "pnl": 5102.0,
+      "pf": 1.72
      },
      "060-089m": {
-      "n": 17,
-      "pnl": 6790.0,
-      "pf": 2.1
+      "n": 34,
+      "pnl": 2511.0,
+      "pf": 1.32
      },
      "090-119m": {
-      "n": 14,
-      "pnl": 7372.0,
-      "pf": 3.15
+      "n": 21,
+      "pnl": 5224.0,
+      "pf": 2.18
      }
     }
    }
@@ -169,221 +175,243 @@
   {
    "feature": "distance above VWAP",
    "bucket": "0.5-1%",
-   "train_n": 34,
-   "train_pf": 0.58,
-   "train_pnl": -5970,
-   "test_n": 14,
-   "test_pf": 4.16,
-   "test_pnl": 7753,
+   "train_n": 53,
+   "train_pf": 0.97,
+   "train_pnl": -496,
+   "test_n": 32,
+   "test_pf": 1.71,
+   "test_pnl": 3919,
    "flag": ""
   },
   {
    "feature": "distance above VWAP",
    "bucket": "1-2%",
-   "train_n": 53,
-   "train_pf": 0.83,
-   "train_pnl": -4153,
-   "test_n": 24,
-   "test_pf": 1.96,
-   "test_pnl": 8227,
+   "train_n": 60,
+   "train_pf": 1.25,
+   "train_pnl": 4229,
+   "test_n": 32,
+   "test_pf": 1.5,
+   "test_pnl": 5799,
    "flag": ""
   },
   {
    "feature": "distance above VWAP",
    "bucket": "<0.5%",
-   "train_n": 20,
-   "train_pf": 1.42,
-   "train_pnl": 2382,
-   "test_n": 11,
-   "test_pf": 1.41,
-   "test_pnl": 1947,
+   "train_n": 60,
+   "train_pf": 0.58,
+   "train_pnl": -4789,
+   "test_n": 28,
+   "test_pf": 1.23,
+   "test_pnl": 1257,
    "flag": ""
   },
   {
    "feature": "entry time",
    "bucket": "30-60m",
-   "train_n": 33,
-   "train_pf": 1.15,
-   "train_pnl": 1573,
-   "test_n": 16,
-   "test_pf": 2.19,
-   "test_pnl": 5424,
+   "train_n": 61,
+   "train_pf": 1.32,
+   "train_pnl": 4006,
+   "test_n": 30,
+   "test_pf": 1.72,
+   "test_pnl": 5102,
    "flag": ""
   },
   {
    "feature": "entry time",
    "bucket": "60-120m",
-   "train_n": 69,
-   "train_pf": 0.71,
-   "train_pnl": -8965,
-   "test_n": 31,
-   "test_pf": 2.48,
-   "test_pnl": 14163,
+   "train_n": 98,
+   "train_pf": 0.7,
+   "train_pnl": -8065,
+   "test_n": 55,
+   "test_pf": 1.63,
+   "test_pnl": 7735,
    "flag": ""
   },
   {
    "feature": "entry time",
    "bucket": "first 30m",
-   "train_n": 5,
-   "train_pf": 0.86,
-   "train_pnl": -350,
-   "test_n": 2,
-   "test_pf": 0.0,
-   "test_pnl": -1660,
+   "train_n": 12,
+   "train_pf": 1.9,
+   "train_pnl": 2381,
+   "test_n": 7,
+   "test_pf": 0.43,
+   "test_pnl": -1862,
+   "flag": ""
+  },
+  {
+   "feature": "entry time",
+   "bucket": "later",
+   "train_n": 2,
+   "train_pf": 2.56,
+   "train_pnl": 620,
+   "test_n": 0,
+   "test_pf": 99,
+   "test_pnl": 0,
    "flag": ""
   },
   {
    "feature": "market (QQQ)",
    "bucket": "against",
-   "train_n": 4,
-   "train_pf": 90.31,
-   "train_pnl": 2679,
-   "test_n": 4,
-   "test_pf": 0.63,
-   "test_pnl": -920,
+   "train_n": 11,
+   "train_pf": 2.92,
+   "train_pnl": 2872,
+   "test_n": 9,
+   "test_pf": 1.07,
+   "test_pnl": 196,
    "flag": ""
   },
   {
    "feature": "market (QQQ)",
    "bucket": "mixed",
-   "train_n": 21,
-   "train_pf": 1.26,
-   "train_pnl": 1817,
-   "test_n": 8,
-   "test_pf": 1.82,
-   "test_pnl": 2192,
+   "train_n": 46,
+   "train_pf": 0.86,
+   "train_pnl": -1556,
+   "test_n": 21,
+   "test_pf": 0.66,
+   "test_pnl": -1918,
    "flag": ""
   },
   {
    "feature": "market (QQQ)",
    "bucket": "with",
-   "train_n": 82,
-   "train_pf": 0.67,
-   "train_pnl": -12238,
-   "test_n": 37,
-   "test_pf": 2.56,
-   "test_pnl": 16656,
+   "train_n": 116,
+   "train_pf": 0.92,
+   "train_pnl": -2373,
+   "test_n": 62,
+   "test_pf": 1.89,
+   "test_pnl": 12697,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "0-2%",
-   "train_n": 45,
-   "train_pf": 0.83,
-   "train_pnl": -2881,
-   "test_n": 25,
-   "test_pf": 3.54,
-   "test_pnl": 13666,
+   "train_n": 85,
+   "train_pf": 0.86,
+   "train_pnl": -2976,
+   "test_n": 49,
+   "test_pf": 2.03,
+   "test_pnl": 9796,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "2-5%",
-   "train_n": 31,
-   "train_pf": 0.47,
-   "train_pnl": -8150,
-   "test_n": 11,
-   "test_pf": 1.23,
-   "test_pnl": 1159,
+   "train_n": 38,
+   "train_pf": 1.43,
+   "train_pnl": 4390,
+   "test_n": 15,
+   "test_pf": 1.02,
+   "test_pnl": 143,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "5%+",
-   "train_n": 8,
-   "train_pf": 0.45,
-   "train_pnl": -2619,
-   "test_n": 1,
-   "test_pf": 0.0,
-   "test_pnl": -830,
+   "train_n": 1,
+   "train_pf": 99,
+   "train_pnl": 585,
+   "test_n": 3,
+   "test_pf": 2.91,
+   "test_pnl": 1565,
    "flag": ""
   },
   {
    "feature": "move since the open",
    "bucket": "down",
-   "train_n": 23,
-   "train_pf": 1.88,
-   "train_pnl": 5908,
-   "test_n": 12,
-   "test_pf": 1.88,
-   "test_pnl": 3932,
+   "train_n": 49,
+   "train_pf": 0.73,
+   "train_pnl": -3056,
+   "test_n": 25,
+   "test_pf": 0.92,
+   "test_pnl": -529,
    "flag": ""
   },
   {
    "feature": "signal volume",
    "bucket": "3-5x",
-   "train_n": 76,
-   "train_pf": 1.08,
-   "train_pnl": 2361,
-   "test_n": 37,
-   "test_pf": 2.28,
-   "test_pnl": 14607,
+   "train_n": 35,
+   "train_pf": 1.02,
+   "train_pnl": 147,
+   "test_n": 25,
+   "test_pf": 2.04,
+   "test_pnl": 5555,
    "flag": ""
   },
   {
    "feature": "signal volume",
    "bucket": "5x+",
-   "train_n": 31,
-   "train_pf": 0.32,
-   "train_pnl": -10103,
-   "test_n": 12,
-   "test_pf": 1.76,
-   "test_pnl": 3321,
+   "train_n": 18,
+   "train_pf": 0.7,
+   "train_pnl": -1509,
+   "test_n": 9,
+   "test_pf": 2.09,
+   "test_pnl": 1480,
+   "flag": ""
+  },
+  {
+   "feature": "signal volume",
+   "bucket": "<3x",
+   "train_n": 120,
+   "train_pf": 1.01,
+   "train_pnl": 305,
+   "test_n": 58,
+   "test_pf": 1.25,
+   "test_pnl": 3940,
    "flag": ""
   },
   {
    "feature": "weekday",
    "bucket": "Fri",
-   "train_n": 21,
-   "train_pf": 0.3,
-   "train_pnl": -7629,
-   "test_n": 3,
-   "test_pf": 3.78,
-   "test_pnl": 2309,
+   "train_n": 37,
+   "train_pf": 0.62,
+   "train_pnl": -4156,
+   "test_n": 16,
+   "test_pf": 1.12,
+   "test_pnl": 638,
    "flag": ""
   },
   {
    "feature": "weekday",
    "bucket": "Mon",
-   "train_n": 14,
-   "train_pf": 2.74,
-   "train_pnl": 5058,
-   "test_n": 10,
-   "test_pf": 6.65,
-   "test_pnl": 9860,
+   "train_n": 34,
+   "train_pf": 1.37,
+   "train_pnl": 2646,
+   "test_n": 19,
+   "test_pf": 1.76,
+   "test_pnl": 2620,
    "flag": ""
   },
   {
    "feature": "weekday",
    "bucket": "Thu",
-   "train_n": 21,
-   "train_pf": 0.93,
-   "train_pnl": -599,
-   "test_n": 8,
-   "test_pf": 2.49,
-   "test_pnl": 3753,
+   "train_n": 26,
+   "train_pf": 1.11,
+   "train_pnl": 690,
+   "test_n": 16,
+   "test_pf": 1.8,
+   "test_pnl": 3260,
    "flag": ""
   },
   {
    "feature": "weekday",
    "bucket": "Tue",
-   "train_n": 27,
-   "train_pf": 1.32,
-   "train_pnl": 2980,
-   "test_n": 12,
-   "test_pf": 1.04,
-   "test_pnl": 156,
+   "train_n": 39,
+   "train_pf": 1.98,
+   "train_pnl": 7231,
+   "test_n": 18,
+   "test_pf": 1.13,
+   "test_pnl": 514,
    "flag": ""
   },
   {
    "feature": "weekday",
    "bucket": "Wed",
-   "train_n": 24,
-   "train_pf": 0.38,
-   "train_pnl": -7552,
-   "test_n": 16,
-   "test_pf": 1.29,
-   "test_pnl": 1849,
+   "train_n": 37,
+   "train_pf": 0.29,
+   "train_pnl": -7467,
+   "test_n": 23,
+   "test_pf": 1.69,
+   "test_pnl": 3943,
    "flag": ""
   }
  ],
