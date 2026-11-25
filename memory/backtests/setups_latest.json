@@ -1,47 +1,48 @@
 {
- "vwap": {
+ "orb": {
   "params": {
    "max_positions": 2,
    "risk_pct": 0.005,
    "max_x": 2.0,
    "last_entry_min": 180,
-   "setup": "vwap",
-   "trend_bars": 60,
-   "touch": 0.003,
-   "rr": 2.0,
+   "setup": "orb",
+   "or_min": 5,
+   "orb_stop": "mid",
+   "rr": 3.0,
+   "vol_mult": 1.5,
    "filter": 1,
    "breakeven_r": 1.0
   },
   "train": {
-   "trades": 56,
-   "pnl": 512.0,
-   "win_rate": 0.357,
-   "profit_factor": 1.04,
-   "max_drawdown": -3873.0,
-   "avg_win": 706.0,
-   "avg_loss": -378.0,
-   "per_day": 6.0,
-   "green_days": "17/80",
+   "trades": 60,
+   "pnl": 957.0,
+   "win_rate": 0.367,
+   "profit_factor": 1.08,
+   "max_drawdown": -4530.0,
+   "avg_win": 617.0,
+   "avg_loss": -332.0,
+   "per_day": 24.0,
+   "green_days": "14/40",
    "exits": {
-    "stop": 33,
-    "target": 12,
-    "eod": 11
+    "stop": 29,
+    "eod": 28,
+    "target": 3
    }
   },
   "test": {
-   "trades": 31,
-   "pnl": 600.0,
-   "win_rate": 0.419,
-   "profit_factor": 1.08,
-   "max_drawdown": -3331.0,
-   "avg_win": 612.0,
-   "avg_loss": -409.0,
-   "per_day": 15.0,
-   "green_days": "8/40",
+   "trades": 24,
+   "pnl": 7661.0,
+   "win_rate": 0.542,
+   "profit_factor": 3.57,
+   "max_drawdown": -1012.0,
+   "avg_win": 818.0,
+   "avg_loss": -271.0,
+   "per_day": 383.0,
+   "green_days": "9/20",
    "exits": {
-    "stop": 13,
     "eod": 12,
-    "target": 6
+    "stop": 7,
+    "target": 5
    }
   }
  }
