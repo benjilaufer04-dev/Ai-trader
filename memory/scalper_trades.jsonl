@@ -33,3 +33,5 @@
 {"ts": "2026-11-24T15:00:04+00:00", "symbol": "SOXS", "side": "sell", "qty": 874, "entry": 58.874394, "exit": 57.91524, "pnl": -838.3, "reason": "stop order 57.93"}
 {"ts": "2026-11-24T15:08:07+00:00", "symbol": "SQQQ", "side": "buy", "qty": 1044, "entry": 48.64, "signal_volume_x": 2.1}
 {"ts": "2026-11-24T15:33:28+00:00", "symbol": "SQQQ", "side": "sell", "qty": 1044, "entry": 48.64, "exit": 48.615383, "pnl": -25.7, "reason": "stop order 48.64"}
+{"ts": "2026-11-25T15:49:00+00:00", "symbol": "TSLA", "side": "buy", "qty": 139, "entry": 365.31, "signal_volume_x": 3.18}
+{"ts": "2026-11-25T16:06:18+00:00", "symbol": "TSLA", "side": "sell", "qty": 139, "entry": 365.31, "exit": 362.51, "pnl": -389.2, "reason": "momentum faded (EMA9<EMA21, below VWAP)"}
