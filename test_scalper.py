@@ -147,3 +147,15 @@ def test_stops_early_only_when_flat_and_past_entry_window():
     assert not sc.nothing_left_today(1, 121, cfg)      # still managing a trade
     assert not sc.nothing_left_today(0, 60, cfg)       # still looking for entries
     assert not sc.nothing_left_today(0, 300, dict(cfg, entry_window_min=999))
+
+
+def test_older_ok_rejects_settings_worse_on_older_days():
+    from backtest import older_ok
+    cur = {"pnl": -1100.0, "max_drawdown": -8000.0}
+    # the 11-24 case: new settings lost more and drew down 13.7% on Jun-Sep
+    assert not older_ok({"pnl": -7700.0, "max_drawdown": -13700.0}, cur)
+    # more profit but much deeper drawdown -> reject
+    assert not older_ok({"pnl": 500.0, "max_drawdown": -12000.0}, cur)
+    # not worse -> ok; no older data -> gate not applied
+    assert older_ok({"pnl": 0.0, "max_drawdown": -9000.0}, cur)
+    assert older_ok(None, None)

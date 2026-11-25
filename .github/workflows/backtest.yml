@@ -58,7 +58,7 @@ jobs:
           elif [ "${{ inputs.inverse }}" = "true" ]; then
             python backtest.py --days ${{ inputs.days || '30' }} --inverse
           else
-            python backtest.py --days ${{ inputs.days || '60' }} --tune $ADOPT
+            python backtest.py --days ${{ inputs.days || '60' }} --tune --older 60 $ADOPT
             # also re-test the alternative trading styles every night (report only)
             python setups.py --days ${{ inputs.days || '60' }} || true
           fi

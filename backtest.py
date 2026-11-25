@@ -365,6 +365,17 @@ def should_adopt(train, test, cur_test, equity=100_000):
             and train["pnl"] > 0)
 
 
+def older_ok(new_old, cur_old):
+    """Second gate (reviewer 11-25): the new settings must not be worse than the current ones on
+    the OLDER days before the 60-day window (days neither tuning nor TEST used). On 11-24 a tuned
+    setting passed TEST but lost Jun-Sep (PF 0.82, DD 13.7%) where the current one was ~flat:
+    it fit only the recent market. Require: profit not lower, drawdown not >25% deeper."""
+    if new_old is None or cur_old is None:
+        return True  # no older data loaded: gate not applied
+    return (new_old["pnl"] >= cur_old["pnl"]
+            and new_old["max_drawdown"] >= 1.25 * min(cur_old["max_drawdown"], -1.0))
+
+
 def adoption_frozen(path=None, today=None):
     """A reviewer can pause auto-adoption by putting "freeze_until": "YYYY-MM-DD" (and a
     "freeze_reason") in scalper_params.json. Returns the date string while frozen, else None."""
@@ -389,11 +400,15 @@ def main():
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--tune", action="store_true")
     ap.add_argument("--adopt", action="store_true")
+    ap.add_argument("--older", type=int, default=0,
+                    help="with --tune: also load this many OLDER days and require new settings not worse there")
     ap.add_argument("--inverse", action="store_true", help="test the 'do the opposite' idea")
     a = ap.parse_args()
 
     base = current_cfg()
-    bars, days = load_bars(list(dict.fromkeys(base["symbols"] + ["QQQ"])), a.days)
+    n_older = a.older if a.tune else 0
+    bars, days = load_bars(list(dict.fromkeys(base["symbols"] + ["QQQ"])), a.days + n_older)
+    older, days = (days[:-a.days], days[-a.days:]) if n_older else ([], days)
     ctx = bars["QQQ"] if "QQQ" in bars else None
     if "QQQ" not in base["symbols"]:
         bars.pop("QQQ", None)
@@ -479,6 +494,15 @@ def main():
                         "all": stats(simulate(bars, days, best[3]), days)}
         cur_test = res["current"]["test"]
         passed = should_adopt(best[1], best[2], cur_test)
+        if passed and older:
+            new_old = stats(simulate(bars, older, best[3]), older)
+            cur_old = stats(simulate(bars, older, base), older)
+            ok = older_ok(new_old, cur_old)
+            res["older_check"] = {"days": f"{older[0]}..{older[-1]}", "new": new_old, "current": cur_old, "ok": ok}
+            lines += [f"## Older-days check ({len(older)} days {older[0]}..{older[-1]}, never used above)",
+                      f"- NEW    : {new_old}", f"- CURRENT: {cur_old}",
+                      f"- {'OK: not worse on older days' if ok else 'FAIL: worse on older days (fits only the recent market)'}", ""]
+            passed = ok
         frozen = adoption_frozen()
         res["adopted"] = bool(passed and a.adopt and not frozen)
         verdict = (f"NOT adopted: auto-adoption paused by the reviewer until {frozen}"
