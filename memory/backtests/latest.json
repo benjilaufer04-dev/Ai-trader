@@ -461,5 +461,42 @@
    }
   }
  },
+ "older_check": {
+  "days": "2026-06-08..2026-09-01",
+  "new": {
+   "trades": 71,
+   "pnl": -5135.0,
+   "win_rate": 0.338,
+   "profit_factor": 0.84,
+   "max_drawdown": -10015.0,
+   "avg_win": 1117.0,
+   "avg_loss": -680.0,
+   "per_day": -86.0,
+   "green_days": "13/60",
+   "exits": {
+    "stop": 55,
+    "target": 13,
+    "time": 3
+   }
+  },
+  "current": {
+   "trades": 119,
+   "pnl": 226.0,
+   "win_rate": 0.269,
+   "profit_factor": 1.01,
+   "max_drawdown": -7974.0,
+   "avg_win": 972.0,
+   "avg_loss": -355.0,
+   "per_day": 4.0,
+   "green_days": "19/60",
+   "exits": {
+    "momentum": 72,
+    "stop": 25,
+    "eod": 17,
+    "target": 5
+   }
+  },
+  "ok": false
+ },
  "adopted": false
 }
