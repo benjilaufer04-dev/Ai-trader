@@ -399,6 +399,66 @@
    "flag": ""
   }
  ],
+ "rule_checks": [
+  {
+   "name": "skip the first 30 min (entries from 9:30+30m; lessons: first-30m entries lose)",
+   "change": {
+    "skip_open_min": 30
+   },
+   "train": {
+    "trades": 103,
+    "pnl": 10593.0,
+    "win_rate": 0.291,
+    "profit_factor": 1.52,
+    "max_drawdown": -7188.0,
+    "avg_win": 1031.0,
+    "avg_loss": -279.0,
+    "per_day": 265.0,
+    "green_days": "16/40",
+    "exits": {
+     "momentum": 68,
+     "eod": 18,
+     "stop": 11,
+     "target": 6
+    }
+   },
+   "test": {
+    "trades": 34,
+    "pnl": 3009.0,
+    "win_rate": 0.265,
+    "profit_factor": 1.31,
+    "max_drawdown": -2309.0,
+    "avg_win": 1427.0,
+    "avg_loss": -393.0,
+    "per_day": 150.0,
+    "green_days": "7/20",
+    "exits": {
+     "momentum": 17,
+     "stop": 11,
+     "target": 4,
+     "eod": 2
+    }
+   },
+   "older": {
+    "trades": 115,
+    "pnl": -4528.0,
+    "win_rate": 0.243,
+    "profit_factor": 0.85,
+    "max_drawdown": -12381.0,
+    "avg_win": 952.0,
+    "avg_loss": -358.0,
+    "per_day": -75.0,
+    "green_days": "16/60",
+    "exits": {
+     "momentum": 71,
+     "stop": 23,
+     "eod": 17,
+     "target": 4
+    }
+   },
+   "passes": false
+  }
+ ],
  "tuned": {
   "params": {
    "stop_pct": 0.008,
