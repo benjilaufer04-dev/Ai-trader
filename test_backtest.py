@@ -152,3 +152,23 @@ def test_adoption_frozen(tmp_path):
     p.write_text(json.dumps({"params": {}}))
     assert backtest.adoption_frozen(str(p), "2026-11-25") is None
     assert backtest.adoption_frozen(str(tmp_path / "missing.json"), "2026-11-25") is None
+
+
+def test_rule_check_passes_needs_all_parts_and_test_pf():
+    import backtest
+    s = lambda pnl, pf=1.5: {"pnl": pnl, "profit_factor": pf}
+    cur = {"train": s(100), "test": s(100), "older": s(0)}
+    assert backtest.rule_check_passes({"train": s(200), "test": s(150), "older": s(10)}, cur)
+    assert not backtest.rule_check_passes({"train": s(200), "test": s(150), "older": s(-10)}, cur)
+    assert not backtest.rule_check_passes({"train": s(200), "test": s(150, 1.2), "older": s(10)}, cur)
+    assert backtest.RULE_CHECKS and all(isinstance(c, dict) and c for _, c in backtest.RULE_CHECKS)
+
+
+def test_skip_open_min_blocks_early_entries():
+    import backtest
+    bars, days = fake_minute_bars(["TQQQ", "SQQQ"], days=10, seed=1)
+    base = backtest.with_params(dict(backtest.sc.CFG), vol_mult=2.0, entry_window_min=999)
+    all_t = backtest.simulate(bars, days, dict(base, skip_open_min=0))
+    assert any(t["entry_min"] < 41 for t in all_t), "fixture should have early entries"
+    late = backtest.simulate(bars, days, dict(base, skip_open_min=40))
+    assert late and all(t["entry_min"] >= 41 for t in late)

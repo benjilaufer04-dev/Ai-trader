@@ -376,6 +376,21 @@ def older_ok(new_old, cur_old):
             and new_old["max_drawdown"] >= 1.25 * min(cur_old["max_drawdown"], -1.0))
 
 
+# Candidate rule changes from the Lessons / reviewer notes, re-checked every night (report only).
+# Each is the current settings plus one change; it is only a candidate for going live if it beats
+# the current settings on TRAIN, TEST and the OLDER days, with TEST PF >= 1.3 (see rule_check_passes).
+RULE_CHECKS = [
+    ("skip the first 30 min (entries from 9:30+30m; lessons: first-30m entries lose)", {"skip_open_min": 30}),
+]
+
+
+def rule_check_passes(var, cur):
+    """var/cur: {"train","test","older"} -> stats. Better profit on every part loaded, TEST PF >= 1.3."""
+    parts = [k for k in ("train", "test", "older") if var.get(k) is not None and cur.get(k) is not None]
+    return (bool(parts) and all(var[k]["pnl"] > cur[k]["pnl"] for k in parts)
+            and var["test"]["profit_factor"] >= 1.3)
+
+
 def adoption_frozen(path=None, today=None):
     """A reviewer can pause auto-adoption by putting "freeze_until": "YYYY-MM-DD" (and a
     "freeze_reason") in scalper_params.json. Returns the date string while frozen, else None."""
@@ -386,6 +401,10 @@ def adoption_frozen(path=None, today=None):
     except Exception:
         return None
     return until if until and today <= until else None
+
+
+def _short(s):
+    return f"{s['trades']} tr ${s['pnl']:+,.0f} PF {s['profit_factor']} DD ${s['max_drawdown']:,.0f}"
 
 
 def score_fn(s):
@@ -460,6 +479,24 @@ def main():
             lines.append(f"- {t['day']} {t['symbol']} ${t['pnl']:+,.0f} ({t['why'][:30]}) | market {t.get('market')}, "
                          f"vol x{t.get('vol_x')}, {labs['entry time']}, day move {labs['move since the open']}"
                          + (f" | {', '.join(notes)}" if notes else ""))
+        lines.append("")
+
+    if n_older and older:
+        lines += ["## Rule checks (one change vs current; must beat current on TRAIN, TEST and OLDER "
+                  f"{older[0]}..{older[-1]}; report only)", ""]
+        cur_parts = {"train": res["current"]["train"], "test": res["current"]["test"],
+                     "older": stats(simulate(bars, older, base), older)}
+        lines.append(f"- CURRENT: TRAIN {_short(cur_parts['train'])} | TEST {_short(cur_parts['test'])} | "
+                     f"OLDER {_short(cur_parts['older'])}")
+        res["rule_checks"] = []
+        for name, change in RULE_CHECKS:
+            cfg = dict(base, **change)
+            var = {"train": stats(simulate(bars, train, cfg), train), "test": stats(simulate(bars, test, cfg), test),
+                   "older": stats(simulate(bars, older, cfg), older)}
+            ok = rule_check_passes(var, cur_parts)
+            res["rule_checks"].append({"name": name, "change": change, **var, "passes": ok})
+            lines.append(f"- {name}: TRAIN {_short(var['train'])} | TEST {_short(var['test'])} | "
+                         f"OLDER {_short(var['older'])} -> {'PASSES (candidate)' if ok else 'no'}")
         lines.append("")
 
     if a.inverse:
