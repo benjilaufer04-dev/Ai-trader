@@ -32,6 +32,7 @@ import math
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 from alpaca.data.enums import DataFeed
@@ -159,6 +160,14 @@ def manage(trade, price, now, cfg=CFG):
     if age >= cfg["time_stop_min"] and gain_best < cfg["time_stop_needs"]:
         return f"time stop ({age:.0f} min, no follow-through)"
     return None
+
+
+def session_open(close_at):
+    """9:30 ET on the day of close_at. Regular US sessions always open at 9:30 ET; half days
+    (e.g. the day after Thanksgiving) close early at 13:00, so 'close - 6.5h' would be wrong
+    (6:30 ET -> the entry window looked over at the open and pre-market bars entered VWAP)."""
+    et = close_at.astimezone(ZoneInfo("America/New_York"))
+    return et.replace(hour=9, minute=30, second=0, microsecond=0)
 
 
 def nothing_left_today(n_open, since_open_min, cfg=CFG):
@@ -391,7 +400,7 @@ class Scalper:
             clock = self.t.get_clock()
         close_at = clock.next_close
         stop_at = datetime.now(timezone.utc) + timedelta(minutes=minutes) if minutes else close_at
-        session_start = (close_at - timedelta(hours=6, minutes=30))
+        session_start = session_open(close_at)
         log.info("Scalping %s until %s | position %.1fx equity, max %d at once",
                  ",".join(CFG["symbols"]), min(stop_at, close_at), CFG["position_x"], CFG["max_positions"])
         self.adopt_positions()

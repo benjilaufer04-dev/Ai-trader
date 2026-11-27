@@ -20,6 +20,7 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 
@@ -160,7 +161,9 @@ class Swing:
             return
         log.info("Waiting %.1f min, then deciding %s min before the close.", plan, CFG["decide_min_before_close"])
         time.sleep(plan * 60)
-        session_start = clock.next_close - timedelta(hours=6, minutes=30)
+        # 9:30 ET today (not close - 6.5h: wrong on half days, would pull in pre-market bars)
+        session_start = clock.next_close.astimezone(ZoneInfo("America/New_York")).replace(
+            hour=9, minute=30, second=0, microsecond=0)
         acct = self.t.get_account()
         equity, cash = float(acct.equity), float(acct.cash)
         held = {p.symbol: p for p in self.t.get_all_positions()}

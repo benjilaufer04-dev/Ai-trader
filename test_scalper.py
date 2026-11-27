@@ -159,3 +159,18 @@ def test_older_ok_rejects_settings_worse_on_older_days():
     # not worse -> ok; no older data -> gate not applied
     assert older_ok({"pnl": 0.0, "max_drawdown": -9000.0}, cur)
     assert older_ok(None, None)
+
+
+def test_session_open_is_930_et_on_normal_and_half_days():
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+    et = ZoneInfo("America/New_York")
+    normal = datetime(2026, 11, 25, 16, 0, tzinfo=et)
+    half = datetime(2026, 11, 27, 13, 0, tzinfo=et)          # day after Thanksgiving
+    summer = datetime(2026, 7, 15, 20, 0, tzinfo=timezone.utc)  # 16:00 EDT given in UTC
+    for close in (normal, half, summer):
+        o = sc.session_open(close).astimezone(et)
+        assert (o.hour, o.minute) == (9, 30) and o.date() == close.astimezone(et).date()
+    # on the half day the entry window must still be open 10 min after the open
+    since = (datetime(2026, 11, 27, 9, 40, tzinfo=et) - sc.session_open(half)).total_seconds() / 60
+    assert not sc.nothing_left_today(0, since)
