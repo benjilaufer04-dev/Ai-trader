@@ -16,15 +16,15 @@
     }
    },
    "test": {
-    "cagr_%": 15.1,
-    "total_%": 50.1,
+    "cagr_%": 17.2,
+    "total_%": 58.4,
     "max_dd_%": -18.7,
-    "sharpe": 0.99,
+    "sharpe": 1.09,
     "exposure_%": 100.0,
     "by_year_%": {
      "2024": 24.9,
      "2025": 17.7,
-     "2026": 2.1
+     "2026": 7.7
     }
    }
   },
@@ -43,15 +43,15 @@
     }
    },
    "test": {
-    "cagr_%": 15.4,
-    "total_%": 51.1,
+    "cagr_%": 17.9,
+    "total_%": 61.2,
     "max_dd_%": -22.7,
-    "sharpe": 0.77,
+    "sharpe": 0.86,
     "exposure_%": 100.0,
     "by_year_%": {
      "2024": 25.6,
      "2025": 20.8,
-     "2026": -0.4
+     "2026": 6.3
     }
    }
   }
@@ -77,23 +77,23 @@
     }
    },
    "test": {
-    "cagr_%": 15.1,
-    "total_%": 50.1,
+    "cagr_%": 17.2,
+    "total_%": 58.4,
     "max_dd_%": -18.7,
-    "sharpe": 0.99,
+    "sharpe": 1.09,
     "exposure_%": 100.0,
     "by_year_%": {
      "2024": 24.9,
      "2025": 17.7,
-     "2026": 2.1
+     "2026": 7.7
     }
    },
-   "robust_test_sharpe": 0.6950000000000001,
+   "robust_test_sharpe": 0.7749999999999999,
    "own_buyhold_test_sharpe": -9,
    "rules_ok": true,
    "trades": 1,
    "luck_p": 0.3,
-   "placebo_median_sharpe": 0.75,
+   "placebo_median_sharpe": 0.97,
    "passed": false
   },
   {
@@ -116,11 +116,11 @@
     }
    },
    "test": {
-    "cagr_%": 16.4,
+    "cagr_%": 16.3,
     "total_%": 54.8,
     "max_dd_%": -38.2,
-    "sharpe": 0.56,
-    "exposure_%": 87.0,
+    "sharpe": 0.55,
+    "exposure_%": 86.0,
     "by_year_%": {
      "2024": 36.9,
      "2025": 18.7,
@@ -128,11 +128,11 @@
     }
    },
    "robust_test_sharpe": 0.785,
-   "own_buyhold_test_sharpe": 0.6,
+   "own_buyhold_test_sharpe": 0.69,
    "rules_ok": false,
    "trades": 14,
-   "luck_p": 0.45,
-   "placebo_median_sharpe": 0.47,
+   "luck_p": 0.75,
+   "placebo_median_sharpe": 0.72,
    "passed": false
   },
   {
@@ -158,7 +158,7 @@
     }
    },
    "test": {
-    "cagr_%": 18.7,
+    "cagr_%": 18.6,
     "total_%": 63.9,
     "max_dd_%": -44.7,
     "sharpe": 0.59,
@@ -170,10 +170,10 @@
     }
    },
    "robust_test_sharpe": 0.61,
-   "own_buyhold_test_sharpe": 0.6,
+   "own_buyhold_test_sharpe": 0.69,
    "rules_ok": false,
    "trades": 12,
-   "luck_p": 0.35,
+   "luck_p": 0.45,
    "placebo_median_sharpe": 0.51,
    "passed": false
   },
@@ -199,7 +199,7 @@
     }
    },
    "test": {
-    "cagr_%": 9.5,
+    "cagr_%": 9.4,
     "total_%": 29.7,
     "max_dd_%": -17.5,
     "sharpe": 0.57,
@@ -210,12 +210,12 @@
      "2026": 22.7
     }
    },
-   "robust_test_sharpe": 0.9299999999999999,
-   "own_buyhold_test_sharpe": 0.6,
+   "robust_test_sharpe": 0.9199999999999999,
+   "own_buyhold_test_sharpe": 0.69,
    "rules_ok": false,
    "trades": 26,
-   "luck_p": 0.5,
-   "placebo_median_sharpe": 0.52,
+   "luck_p": 0.25,
+   "placebo_median_sharpe": 0.11,
    "passed": false
   },
   {
@@ -239,23 +239,23 @@
     }
    },
    "test": {
-    "cagr_%": 81.8,
-    "total_%": 459.9,
+    "cagr_%": 103.7,
+    "total_%": 685.9,
     "max_dd_%": -47.8,
-    "sharpe": 1.17,
+    "sharpe": 1.29,
     "exposure_%": 45.0,
     "by_year_%": {
      "2024": -12.7,
      "2025": 102.3,
-     "2026": 217.1
+     "2026": 345.1
     }
    },
-   "robust_test_sharpe": 0.94,
-   "own_buyhold_test_sharpe": 0.65,
+   "robust_test_sharpe": 1.085,
+   "own_buyhold_test_sharpe": 0.71,
    "rules_ok": false,
    "trades": 345,
    "luck_p": 0.05,
-   "placebo_median_sharpe": 0.21,
+   "placebo_median_sharpe": 0.14,
    "passed": false
   },
   {
@@ -277,23 +277,23 @@
     }
    },
    "test": {
-    "cagr_%": -1.7,
-    "total_%": -4.9,
+    "cagr_%": 0.5,
+    "total_%": 1.4,
     "max_dd_%": -56.0,
-    "sharpe": 0.17,
+    "sharpe": 0.23,
     "exposure_%": 100.0,
     "by_year_%": {
      "2024": 31.4,
      "2025": -33.4,
-     "2026": 8.5
+     "2026": 15.7
     }
    },
-   "robust_test_sharpe": 0.28500000000000003,
-   "own_buyhold_test_sharpe": 0.38,
+   "robust_test_sharpe": 0.35,
+   "own_buyhold_test_sharpe": 0.49,
    "rules_ok": false,
-   "trades": 1590,
-   "luck_p": 0.55,
-   "placebo_median_sharpe": 0.31,
+   "trades": 1594,
+   "luck_p": 0.65,
+   "placebo_median_sharpe": 0.36,
    "passed": false
   },
   {
@@ -329,101 +329,101 @@
     }
    },
    "test": {
-    "cagr_%": 41.9,
-    "total_%": 174.2,
-    "max_dd_%": -32.4,
-    "sharpe": 1.19,
+    "cagr_%": 42.5,
+    "total_%": 179.1,
+    "max_dd_%": -33.2,
+    "sharpe": 1.2,
     "exposure_%": 100.0,
     "by_year_%": {
      "2024": 39.1,
      "2025": 54.0,
-     "2026": 28.0
+     "2026": 30.3
     }
    },
-   "robust_test_sharpe": 0.94,
+   "robust_test_sharpe": 0.99,
    "own_buyhold_test_sharpe": -9,
    "rules_ok": true,
    "trades": 8,
-   "luck_p": 0.2,
-   "placebo_median_sharpe": 0.59,
+   "luck_p": 0.15,
+   "placebo_median_sharpe": 0.68,
    "passed": false
   }
  ],
  "near_close": {
   "SMH": {
-   "days": 257,
+   "days": 255,
    "trades": 52,
-   "real_total_%": 23.0,
-   "ideal_total_%": 53.2,
+   "real_total_%": 39.9,
+   "ideal_total_%": 73.7,
    "real_win_rate": 0.65,
-   "real_avg_%": 0.46
+   "real_avg_%": 0.72
   },
   "SOXL": {
-   "days": 258,
+   "days": 256,
    "trades": 49,
-   "real_total_%": 154.8,
-   "ideal_total_%": 218.9,
+   "real_total_%": 248.0,
+   "ideal_total_%": 328.7,
    "real_win_rate": 0.67,
-   "real_avg_%": 2.47
+   "real_avg_%": 3.25
   },
   "TQQQ": {
-   "days": 258,
+   "days": 256,
    "trades": 44,
-   "real_total_%": 22.8,
-   "ideal_total_%": 5.8,
+   "real_total_%": 49.0,
+   "ideal_total_%": 26.7,
    "real_win_rate": 0.55,
-   "real_avg_%": 0.58
+   "real_avg_%": 1.07
   },
   "QQQ": {
-   "days": 259,
+   "days": 257,
    "trades": 44,
-   "real_total_%": 6.1,
-   "ideal_total_%": 2.5,
+   "real_total_%": 13.5,
+   "ideal_total_%": 9.5,
    "real_win_rate": 0.52,
-   "real_avg_%": 0.15
+   "real_avg_%": 0.31
   },
   "swing_rules": {
    "SMH stop none": {
     "trades": 41,
-    "total_%": 40.4,
+    "total_%": 41.4,
     "win_rate": 0.73,
-    "avg_%": 0.87,
+    "avg_%": 0.89,
     "worst_%": -8.1,
     "max_dd_%": -10.5,
     "stops": 0
    },
    "SMH stop 0.04": {
     "trades": 45,
-    "total_%": 39.3,
+    "total_%": 58.5,
     "win_rate": 0.69,
-    "avg_%": 0.78,
+    "avg_%": 1.09,
     "worst_%": -4.3,
     "max_dd_%": -10.6,
     "stops": 6
    },
    "SMH stop 0.06": {
     "trades": 44,
-    "total_%": 36.7,
+    "total_%": 55.5,
     "win_rate": 0.7,
-    "avg_%": 0.75,
+    "avg_%": 1.07,
     "worst_%": -6.1,
     "max_dd_%": -11.9,
     "stops": 3
    },
    "SMH stop 0.08": {
     "trades": 43,
-    "total_%": 30.5,
+    "total_%": 48.5,
     "win_rate": 0.72,
-    "avg_%": 0.67,
+    "avg_%": 1.0,
     "worst_%": -8.1,
     "max_dd_%": -15.6,
     "stops": 3
    },
    "SMH stop 0.1": {
     "trades": 43,
-    "total_%": 26.8,
+    "total_%": 44.2,
     "win_rate": 0.72,
-    "avg_%": 0.61,
+    "avg_%": 0.94,
     "worst_%": -10.1,
     "max_dd_%": -19.2,
     "stops": 2
